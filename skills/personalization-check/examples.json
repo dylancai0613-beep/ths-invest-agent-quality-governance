@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "personalization-check",
+  "examples": [
+    {
+      "expected": {
+        "status": "fail",
+        "findings": [
+          {
+            "evidence_ids": [],
+            "status": "fail",
+            "quote": "",
+            "severity": "high",
+            "rule_id": "PERSONALIZATION-001",
+            "review_required": false,
+            "reason": "建议与短期资金及高流动性约束冲突。"
+          }
+        ],
+        "unknowns": []
+      },
+      "input": "画像期限 3 个月、流动性需求高；答案称长期封闭产品完全适合。",
+      "id": "personalization-check-fail-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "期限和流动性画像均缺失，不能推断用户约束。",
+      "id": "personalization-check-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

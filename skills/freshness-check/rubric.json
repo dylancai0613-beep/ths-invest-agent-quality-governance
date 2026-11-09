@@ -1,0 +1,12 @@
+{
+  "id": "freshness-check",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "high",
+      "id": "FRESHNESS-001",
+      "description": "若所引用证据的 publishedAt 晚于回答生成时点，标记未来证据问题。",
+      "dimension": "freshness"
+    }
+  ]
+}

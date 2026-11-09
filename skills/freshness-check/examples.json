@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "freshness-check",
+  "examples": [
+    {
+      "expected": {
+        "status": "fail",
+        "findings": [
+          {
+            "evidence_ids": [],
+            "status": "fail",
+            "quote": "",
+            "severity": "high",
+            "rule_id": "FRESHNESS-001",
+            "review_required": false,
+            "reason": "证据在回答时点之后公开。"
+          }
+        ],
+        "unknowns": []
+      },
+      "input": "答案生成于 10:00，引用证据 publishedAt 为 11:00。",
+      "id": "freshness-check-fail-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "回答生成时点或证据公开时间缺失，无法判断先后。",
+      "id": "freshness-check-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

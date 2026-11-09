@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "compliance-check",
+  "examples": [
+    {
+      "expected": {
+        "status": "fail",
+        "findings": [
+          {
+            "evidence_ids": [],
+            "status": "fail",
+            "quote": "",
+            "severity": "critical",
+            "rule_id": "COMPLIANCE-001",
+            "review_required": true,
+            "reason": "出现保证不亏表达，需人工复核。"
+          }
+        ],
+        "unknowns": []
+      },
+      "input": "回答写“买入后保证不会亏”。",
+      "id": "compliance-check-fail-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "回答内容缺失，不能判断是否有风险表达。",
+      "id": "compliance-check-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

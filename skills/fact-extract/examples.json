@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "fact-extract",
+  "examples": [
+    {
+      "expected": {
+        "status": "fail",
+        "findings": [
+          {
+            "evidence_ids": [],
+            "status": "fail",
+            "quote": "",
+            "severity": "high",
+            "rule_id": "FACT-001",
+            "review_required": false,
+            "reason": "数值与合成证据快照不匹配。"
+          }
+        ],
+        "unknowns": []
+      },
+      "input": "答案声称虚构基金甲 2026-10 收益率为 9%，证据快照是 3%，单位均为百分比。",
+      "id": "fact-extract-fail-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "缺少同对象、同单位和同期间的可用基准，不能判断真假。",
+      "id": "fact-extract-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

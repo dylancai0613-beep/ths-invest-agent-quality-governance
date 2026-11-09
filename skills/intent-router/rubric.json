@@ -1,0 +1,12 @@
+{
+  "id": "intent-router",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "medium",
+      "id": "INTENT-001",
+      "description": "将问题归入 fact_query、knowledge、market_event、comparison、suitability 之一；证据不足标记 unknown。",
+      "dimension": "intent"
+    }
+  ]
+}

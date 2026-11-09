@@ -1,0 +1,25 @@
+{
+  "status": "retrieved",
+  "source": "iFinD MCP",
+  "query": "同花顺（300033.SZ）2026-11-06的不复权收盘价，单位人民币元，仅查询该交易日",
+  "retrievedAt": "2026-11-09T12:28:57.755Z",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"code\":1,\"msg\":\"success\",\"subCode\":null,\"subMsg\":null,\"data\":{\"answer\":\"|证券代码|证券简称|日期|收盘价|\\n|---|---|---|---|\\n|300033.SZ|同花顺|20261106|202.7|\",\"indicators_params\":{\"收盘价\":{\"交易日期\":\"最新\",\"复权方式\":\"不复权\"}}}}"
+    }
+  ],
+  "notice": "这是实际工具返回值。核验前仍需检查返回的证券、日期、复权方式和单位；接口成功不等于回答中的事实已经通过核验。",
+  "verification": {
+    "claimedValue": 210,
+    "referenceValue": 202.7,
+    "unit": "元",
+    "symbol": "300033.SZ",
+    "date": "2026-11-06",
+    "adjustment": "不复权",
+    "evidenceId": "ifind-6faf3663943d138c54055b40",
+    "status": "MISMATCH",
+    "tolerance": "绝对误差小于0.005元",
+    "reason": "证券、交易日和不复权方式已匹配；按人民币元的限定查询合同比较数值，绝对误差须小于0.005元。此结论仅覆盖该条收盘价事实。"
+  }
+}

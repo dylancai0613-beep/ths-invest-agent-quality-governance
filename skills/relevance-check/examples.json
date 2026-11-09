@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "relevance-check",
+  "examples": [
+    {
+      "expected": {
+        "status": "fail",
+        "findings": [
+          {
+            "evidence_ids": [],
+            "status": "fail",
+            "quote": "",
+            "severity": "high",
+            "rule_id": "RELEVANCE-001",
+            "review_required": false,
+            "reason": "没有回答费用与风险比较请求。"
+          }
+        ],
+        "unknowns": []
+      },
+      "input": "用户问费用和风险，回答只介绍历史收益。",
+      "id": "relevance-check-fail-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "问题或回答文本缺失，无法比较相关性。",
+      "id": "relevance-check-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

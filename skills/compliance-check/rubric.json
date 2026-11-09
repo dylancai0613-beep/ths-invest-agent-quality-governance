@@ -1,0 +1,18 @@
+{
+  "id": "compliance-check",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "critical",
+      "id": "COMPLIANCE-001",
+      "description": "承诺或保证投资收益、保证不亏等表达应标记并要求人工复核。",
+      "dimension": "compliance"
+    },
+    {
+      "severity": "critical",
+      "id": "PRIVACY-001",
+      "description": "回答中泄露敏感个人信息时标记并要求人工复核。",
+      "dimension": "privacy"
+    }
+  ]
+}

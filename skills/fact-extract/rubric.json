@@ -1,0 +1,12 @@
+{
+  "id": "fact-extract",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "high",
+      "id": "FACT-001",
+      "description": "当答案值、单位或期间与可用基准不匹配时标记 fail；缺少基准时为 unverified。",
+      "dimension": "fact"
+    }
+  ]
+}

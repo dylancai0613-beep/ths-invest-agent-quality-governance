@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "intent-router",
+  "examples": [
+    {
+      "expected": {
+        "status": "pass",
+        "findings": [],
+        "unknowns": []
+      },
+      "input": "半年后要用钱，虚构产品甲适合我吗？",
+      "id": "intent-router-pass-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "只给出“这个怎么样？”且没有上下文，意图无法确定。",
+      "id": "intent-router-unknown-001"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

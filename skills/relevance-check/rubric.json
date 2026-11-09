@@ -1,0 +1,12 @@
+{
+  "id": "relevance-check",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "high",
+      "id": "RELEVANCE-001",
+      "description": "答案偏离问题、未完成核心请求或关键要求遗漏时标记 fail。",
+      "dimension": "relevance"
+    }
+  ]
+}

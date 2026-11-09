@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "case-diagnosis",
+  "examples": [
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少模型元数据、检索日志和证据快照，无法确认归因"
+        ]
+      },
+      "input": "只有错误回答，没有检索日志、模型元数据或数据快照。",
+      "id": "case-diagnosis-unknown-001"
+    },
+    {
+      "expected": {
+        "status": "unknown",
+        "findings": [],
+        "unknowns": [
+          "缺少足以确定结果的输入或依据"
+        ]
+      },
+      "input": "没有 finding 或证据输入，归因无从开始。",
+      "id": "case-diagnosis-unknown-002"
+    }
+  ],
+  "notes": "仅为合成规范示例，不是模型实测记录或金融事实。"
+}

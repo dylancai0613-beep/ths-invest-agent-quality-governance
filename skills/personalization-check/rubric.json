@@ -1,0 +1,12 @@
+{
+  "id": "personalization-check",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "high",
+      "id": "PERSONALIZATION-001",
+      "description": "缺少期限信息，或低流动性/短期资金约束与回答建议冲突时标记风险。",
+      "dimension": "personalization"
+    }
+  ]
+}

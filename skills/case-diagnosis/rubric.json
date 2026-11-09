@@ -1,0 +1,12 @@
+{
+  "id": "case-diagnosis",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "severity": "low",
+      "id": "DIAGNOSIS-001",
+      "description": "归因必须链接已存在的问题或证据；证据不足时输出 unknown，不能把候选原因写成已确认事实。",
+      "dimension": "diagnosis"
+    }
+  ]
+}

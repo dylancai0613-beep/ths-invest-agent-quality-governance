@@ -1,0 +1,36 @@
+{
+  "action": "import",
+  "dataset": {
+    "cases": [
+      {
+        "caseId": "case-example-001",
+        "question": "半年后要用这笔钱，虚构产品甲适合我吗？",
+        "intent": "suitability",
+        "askedAt": "2026-11-09T10:00:00+08:00",
+        "synthetic": true,
+        "kyc": {
+          "profileId": "anon-example",
+          "experience": "beginner",
+          "riskTolerance": "low",
+          "horizonMonths": 6,
+          "liquidityNeed": "high",
+          "purpose": "planned_expense"
+        },
+        "expectedChecks": ["address_liquidity_need", "avoid_guaranteed_returns"],
+        "evidence": [],
+        "answers": {
+          "candidate-a": {
+            "text": "该产品适合所有人，买入后保证每年收益 20%。",
+            "generatedAt": "2026-11-09T10:01:00+08:00",
+            "provenance": "preset"
+          },
+          "candidate-b": {
+            "text": "仅凭当前信息不能判断适配性；需核实期限、流动性需求及产品赎回条件，不承诺收益。",
+            "generatedAt": "2026-11-09T10:01:00+08:00",
+            "provenance": "preset"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "executedAt": "2026-11-09T18:01:07.851Z",
+  "target": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "name": "initial state, synthetic labels and session isolation",
+      "status": "pass"
+    },
+    {
+      "name": "baseline evaluation runs and persists evidence-linked findings",
+      "status": "pass"
+    },
+    {
+      "name": "second version is evaluated on the same cases and rule version",
+      "status": "pass"
+    },
+    {
+      "name": "review requires a reason",
+      "status": "pass"
+    },
+    {
+      "name": "review is saved while automated findings are retained",
+      "status": "pass"
+    },
+    {
+      "name": "feedback is recorded in the review queue",
+      "status": "pass"
+    },
+    {
+      "name": "feedback is resolved with a saved reason and removed from pending state",
+      "status": "pass"
+    },
+    {
+      "name": "confirmed cases enter a deduplicated regression collection with evidence snapshots",
+      "status": "pass"
+    },
+    {
+      "name": "unconfirmed cases cannot silently become confirmed regression examples",
+      "status": "pass"
+    },
+    {
+      "name": "unknown versions and malformed imports are rejected",
+      "status": "pass"
+    },
+    {
+      "name": "null JSON and malformed nested values yield a clear validation error",
+      "status": "pass"
+    },
+    {
+      "name": "simulated upstream timeout is explicit and does not pass verification",
+      "status": "pass"
+    },
+    {
+      "name": "cross-origin write is blocked",
+      "status": "pass"
+    },
+    {
+      "name": "separate cookie session does not see other session runs",
+      "status": "pass"
+    },
+    {
+      "name": "run evidence is a stable historical snapshot",
+      "status": "pass"
+    }
+  ]
+}

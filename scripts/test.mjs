@@ -1,0 +1,17 @@
+import { build } from 'esbuild';
+import { readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+const outdir = path.resolve('.sites-runtime/test');
+mkdirSync(outdir, { recursive: true });
+const typed = readdirSync('tests').filter(f => f.endsWith('.test.ts'));
+const direct = readdirSync('tests').filter(f => f.endsWith('.test.mjs')).map(f => path.resolve('tests', f));
+for (const file of typed) await build({ entryPoints: [path.resolve('tests', file)], bundle: true, platform: 'node', target: 'node24', format: 'esm', packages: 'external', outfile: path.join(outdir, file.replace(/\.ts$/, '.mjs')), logLevel: 'warning' });
+const files = [...direct, ...typed.map(f => path.join(outdir, f.replace(/\.ts$/, '.mjs')))];
+if (!files.length) throw new Error('No tests found.');
+const result = spawnSync(process.execPath, ['--test', ...files], { encoding: 'utf8' });
+process.stdout.write(result.stdout ?? '');
+process.stderr.write(result.stderr ?? '');
+mkdirSync('artifacts', { recursive: true });
+writeFileSync('artifacts/unit-test-results.json', JSON.stringify({ executedAt: new Date().toISOString(), testFiles: files.map(f => path.relative(process.cwd(), f)), exitCode: result.status, stdout: result.stdout, stderr: result.stderr }, null, 2));
+process.exitCode = result.status ?? 1;
