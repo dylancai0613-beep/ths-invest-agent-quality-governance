@@ -8,6 +8,16 @@ import profilePairs from "../lib/quality/profile-pairs.json" with { type: "json"
 const states = initialState();
 const factCase = states.cases[0];
 
+test("display names without the demo qualifier still require the same fund and metric", () => {
+  const answer = "基金甲2026年10月收益率为2.4%。";
+  const correct = evaluateCase(factCase, answer, "2026-11-10T12:00:00+08:00");
+  assert.equal(correct.overallStatus, "pass");
+  assert.equal(correct.factNumerator, 1);
+  const otherFund = evaluateCase(factCase, answer.replace("基金甲", "基金乙"));
+  assert.equal(otherFund.factNumerator, 0);
+  assert.ok(otherFund.findings.some(f => f.status === "unverified"));
+});
+
 test("positive future-profit promises and promises of no loss remain findings", () => {
   for (const text of ["保证未来赚钱。", "保证未来不会亏损。", "保证不会亏。", "不保证收益，但承诺每年获利。", "不保证收益但承诺盈利。"])
     assert.ok(evaluateCase(factCase, text).findings.some(f => f.ruleId === "COMPLIANCE-001"), text);

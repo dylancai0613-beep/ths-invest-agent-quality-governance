@@ -20,6 +20,16 @@ let state, runA, runB, feedbackId;
 await check('initial state, synthetic labels and session isolation', async () => {
   const { response, data } = await request(); assert.equal(response.status, 200); assert.ok(cookie);
   assert.ok(data.cases.length >= 20); assert.ok(data.cases.every(c => c.synthetic)); assert.ok(data.versions.length >= 2); state = data;
+  assert.ok(Array.isArray(data.behaviorEvents)); assert.equal(data.behaviorEvents.length, 0);
+});
+await check('view and successful-copy behavior events persist in the current session', async () => {
+  for (const type of ['answer_view', 'evidence_view', 'answer_copy']) {
+    const { response, data } = await request({ action: 'record_behavior', caseId: state.cases[0].caseId, type });
+    assert.equal(response.status, 200); assert.ok(data.behaviorEvents.some(e => e.caseId === state.cases[0].caseId && e.type === type));
+  }
+  const invalid = await request({ action: 'record_behavior', caseId: state.cases[0].caseId, type: 'regenerate' });
+  assert.equal(invalid.response.status, 400);
+  const refreshed = await request(); assert.equal(refreshed.data.behaviorEvents.length, 3);
 });
 await check('baseline evaluation runs and persists evidence-linked findings', async () => {
   const { response, data } = await request({ action: 'evaluate', versionId: 'candidate-a' }); assert.equal(response.status, 200);
@@ -32,6 +42,7 @@ await check('second version is evaluated on the same cases and rule version', as
   const { response, data } = await request({ action: 'evaluate', versionId: 'candidate-b' }); assert.equal(response.status, 200); runB = data.runs[0];
   assert.deepEqual(runA.items.map(i => i.caseId).sort(), runB.items.map(i => i.caseId).sort());
   assert.equal(runA.evaluationVersionId, runB.evaluationVersionId);
+  assert.ok(data.behaviorEvents.some(e => e.type === 'reevaluate' && runB.items.some(i => i.caseId === e.caseId)));
 });
 await check('review requires a reason', async () => {
   const { response } = await request({ action: 'review', runId: runA.id, caseId: runA.items[0].caseId, decision: 'confirmed', note: '' }); assert.equal(response.status, 400);
@@ -73,7 +84,7 @@ await check('cross-origin write is blocked', async () => {
   const { response } = await request({ action: 'reset' }, { Origin: 'https://unrelated.invalid' }); assert.equal(response.status, 403);
 });
 await check('separate cookie session does not see other session runs', async () => {
-  const { runs } = await (await fetch(`${base}/api/quality`)).json(); assert.equal(runs.length, 0);
+  const { runs, behaviorEvents } = await (await fetch(`${base}/api/quality`)).json(); assert.equal(runs.length, 0); assert.equal(behaviorEvents.length, 0);
 });
 await check('run evidence is a stable historical snapshot', async () => {
   const { data } = await request(); const persisted = data.runs.find(r => r.id === runA.id);
@@ -93,6 +104,12 @@ await check('historical iFinD evidence is explicitly selected and retains the or
   const response = await fetch(`${base}/api/tools/ifind`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'historical_snapshot', symbol: '300033.SZ', date: '2026-11-06', field: 'close', claimValue: 210, claimUnit: '元' }) });
   const data = await response.json(); assert.equal(response.status, 200); assert.equal(data.provenance, 'historical_snapshot'); assert.equal(data.status, 'historical_snapshot');
   assert.equal(data.verification.status, 'MISMATCH'); assert.equal(data.verification.referenceValue, 202.7); assert.notEqual(data.retrievedAt, data.servedAt);
+});
+await check('replacing an imported dataset clears behavior events for old case ids', async () => {
+  const source = state.cases[0];
+  const dataset = { cases: [{ ...source, synthetic: true }] };
+  const { response, data } = await request({ action: 'import', dataset });
+  assert.equal(response.status, 200); assert.equal(data.behaviorEvents.length, 0); assert.equal(data.cases.length, 1);
 });
 mkdirSync('artifacts', { recursive: true });
 writeFileSync('artifacts/api-smoke-results.json', JSON.stringify({ executedAt: new Date().toISOString(), target: base, results }, null, 2));

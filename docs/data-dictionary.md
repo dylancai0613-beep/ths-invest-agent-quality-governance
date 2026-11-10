@@ -14,7 +14,7 @@
 | Finding | id, ruleId, dimension, severity, status, quote, reason, evidenceIds, reviewRequired | 一条问题或无法核验结果；不得将缺证据记成通过 |
 | RunItem | overallStatus, findings, reviewStatus, factNumerator/Denominator, verifiedNumerator/Denominator | 单样本结果与分子分母 |
 | Review | runId, caseId, decision, note, createdAt | 人工复核：confirmed / false_positive / needs_evidence |
-| Feedback | id, caseId, kind, note, status, source, resolutionNote, resolvedAt, resolvedRunId | 状态 pending_review / confirmed / dismissed / needs_evidence；已确认反馈可链接到对应人工复核 |
+| Feedback（旧接口兼容，界面不再收集手工意见） | id, caseId, kind, note, status, source, resolutionNote, resolvedAt, resolvedRunId | 状态 pending_review / confirmed / dismissed / needs_evidence；已确认反馈可链接到对应人工复核 |
 | RegressionCase | id, runId, caseId, addedAt, candidateVersionId, evaluationVersionId, caseSnapshot, answerText, findings | 从已人工确认的问题运行中保存的回归快照 |
 | ToolStatus | id, name, status, description | 工具状态；snapshot / simulated_timeout / configured / not_configured |
 | SkillInfo | id, name, version, status, rules, description | status 为 executed 或 spec_only；前者表示规则代码实际挂载，后者仅有规范 |
@@ -36,3 +36,7 @@
 
 
 
+
+## 匿名工作台行为
+
+QualityState.behaviorEvents记录最近100条实际操作：id、caseId、type、createdAt。type为answer_view、evidence_view、answer_copy、regenerate、reevaluate。前三项来自对应界面动作，后两项由成功的服务端生成或复测记录。旧会话无字段时按空数组加载；不采集账号、设备指纹、页面外历史或额外自由文本。记录本演示工作台行为，不冒充生产投资用户反馈；行为不修改规则判断。

@@ -54,7 +54,7 @@ export function initialState(): QualityState {
       { id: "candidate-b", name: "候选 B · 修订（预置）", model: "预置合成回答", promptVersion: "prompt-v2", dataSnapshot: "synthetic-snapshot-v1", description: "预置修订回答；未由模型现场生成" },
     ],
     evaluationVersions: [{ id: "eval-v1", name: "确定性规则 v1", skillVersion: "skills-v1", rules: [...activeRuleIds] }],
-    runs: [], reviews: [], feedback: [], regressionCases: [],
+    runs: [], reviews: [], feedback: [], regressionCases: [], behaviorEvents: [],
     tools: [
       { id: "snapshot-verifier", name: "合成证据快照核验器", status: "snapshot", description: "只对本演示虚构数据快照做数值、单位、期间和时点核验；不是实时行情。" },
       { id: "timeout-probe", name: "超时探针", status: "simulated_timeout", description: "模拟外部数据接口超时，用于展示待核验降级。" },

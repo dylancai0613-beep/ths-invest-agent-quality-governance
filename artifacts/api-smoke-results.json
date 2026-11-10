@@ -1,9 +1,13 @@
 {
-  "executedAt": "2026-11-10T02:52:37.392Z",
+  "executedAt": "2026-11-10T04:20:33.925Z",
   "target": "http://127.0.0.1:5173",
   "results": [
     {
       "name": "initial state, synthetic labels and session isolation",
+      "status": "pass"
+    },
+    {
+      "name": "view and successful-copy behavior events persist in the current session",
       "status": "pass"
     },
     {
@@ -68,6 +72,10 @@
     },
     {
       "name": "historical iFinD evidence is explicitly selected and retains the original retrieval timestamp",
+      "status": "pass"
+    },
+    {
+      "name": "replacing an imported dataset clears behavior events for old case ids",
       "status": "pass"
     }
   ]

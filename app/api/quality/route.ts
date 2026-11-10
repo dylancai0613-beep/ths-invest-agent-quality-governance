@@ -7,7 +7,7 @@ import { evaluateCase } from "../../../lib/quality/evaluate";
 import { initialState } from "../../../lib/quality/seed";
 import { modelWireOptions } from "../../../lib/integrations/model-options";
 import { isIfindConfigured } from "../../../lib/integrations/ifind";
-import type { EvalRun, QualityApiState, QualityCase, QualityState, ReviewDecision } from "../../../lib/quality/types";
+import type { BehaviorType, EvalRun, QualityApiState, QualityCase, QualityState, ReviewDecision } from "../../../lib/quality/types";
 
 const id = () => crypto.randomUUID();
 function refreshToolState(state: QualityState) {
@@ -29,7 +29,7 @@ async function load(sessionId: string): Promise<QualityState> {
     const defaults = initialState();
     const tools = new Map(defaults.tools.map((tool) => [tool.id, tool]));
     for (const tool of saved.tools ?? []) tools.set(tool.id, tool);
-    return { ...defaults, ...saved, tools: [...tools.values()], regressionCases: saved.regressionCases ?? [] };
+    return { ...defaults, ...saved, tools: [...tools.values()], regressionCases: saved.regressionCases ?? [], behaviorEvents: saved.behaviorEvents ?? [] };
   } catch { return initialState(); }
 }
 async function save(sessionId: string, state: QualityState) {
@@ -48,6 +48,10 @@ const fail = (request: Request, sessionId: string, error: string, code: string, 
 function responseState(state: QualityState, sessionId: string): QualityApiState { return { ...state, sessionId }; }
 function redact(text: string) {
   return text.replace(/\b1[3-9]\d{9}\b/g, "[REDACTED_PHONE]").replace(/\b\d{17}[\dXx]\b/g, "[REDACTED_ID]");
+}
+function recordBehavior(state: QualityState, caseId: string, type: BehaviorType) {
+  state.behaviorEvents.unshift({ id: `behavior-${id()}`, caseId, type, createdAt: new Date().toISOString() });
+  state.behaviorEvents = state.behaviorEvents.slice(0, 100);
 }
 const profileSchema = z.object({ profileId: z.string().max(100), experience: z.enum(["beginner", "experienced"]).nullable(), riskTolerance: z.enum(["low", "medium", "high"]).nullable(), horizonMonths: z.number().int().min(1).max(1200).nullable(), liquidityNeed: z.enum(["low", "medium", "high"]).nullable(), purpose: z.string().max(200).nullable() });
 const answerSchema = z.object({ text: z.string().max(8000), generatedAt: z.string().datetime({ offset: true }), provenance: z.enum(["preset", "generated", "manual"]) });
@@ -90,6 +94,13 @@ export async function POST(request: Request) {
     refreshToolState(state);
     if (action === "reset") { state = initialState(); refreshToolState(state); await save(sessionId, state); return withSession(request, sessionId, responseState(state, sessionId)); }
     if (action === "export") return withSession(request, sessionId, { schemaVersion: "1.0", exportedAt: new Date().toISOString(), regressionCases: state.regressionCases });
+    if (action === "record_behavior") {
+      const caseId = body.caseId, type = body.type;
+      if (typeof caseId !== "string" || !state.cases.some((c) => c.caseId === caseId)) return fail(request, sessionId, "案例不存在。", "CASE_NOT_FOUND", 404);
+      if (type !== "answer_view" && type !== "evidence_view" && type !== "answer_copy") return fail(request, sessionId, "仅支持记录查看回答、查看依据或成功复制回答。", "INVALID_BEHAVIOR_TYPE", 400);
+      recordBehavior(state, caseId, type); await save(sessionId, state);
+      return withSession(request, sessionId, responseState(state, sessionId));
+    }
     if (action === "evaluate") {
       const versionId = body.versionId;
       if (typeof versionId !== "string" || !state.versions.some((v) => v.id === versionId)) return fail(request, sessionId, "候选版本不存在。", "VERSION_NOT_FOUND", 400);
@@ -102,6 +113,10 @@ export async function POST(request: Request) {
         items: cases.map((c) => { const answer = c.answers[versionId]; return evaluateCase(c, answer?.text ?? "", answer?.generatedAt ?? c.askedAt); }) };
       // Preserve answer provenance from the selected candidate; all B seed answers are explicitly preset.
       for (const item of run.items) item.answerProvenance = state.cases.find((c) => c.caseId === item.caseId)?.answers[versionId]?.provenance ?? "preset";
+      for (const item of run.items) {
+        const wasEvaluatedBefore = state.runs.some((previous) => previous.items.some((oldItem) => oldItem.caseId === item.caseId));
+        if (wasEvaluatedBefore && item.answerText.trim()) recordBehavior(state, item.caseId, "reevaluate");
+      }
       state.runs.unshift(run); await save(sessionId, state);
       return withSession(request, sessionId, { ...responseState(state, sessionId), message: "确定性 Skills/规则已实际运行；结果不是 LLM 评测。预置候选回答均标记为 preset。" });
     }
@@ -165,6 +180,7 @@ export async function POST(request: Request) {
       const validation = datasetSchema.safeParse(body.dataset);
       if (!validation.success) return fail(request, sessionId, "导入格式无效：请检查案例字段、意图、KYC、时间、证据和A/B答案；最多50条。", "INVALID_DATASET", 400);
       if (state.runs.length) { state.runs = []; state.reviews = []; state.feedback = []; }
+      state.behaviorEvents = [];
       const seen = new Set<string>();
       for (const c of validation.data.cases) { if (seen.has(c.caseId)) return fail(request, sessionId, "caseId 不能重复。", "DUPLICATE_CASE_ID", 400); seen.add(c.caseId); }
       state.cases = sanitizeTree(validation.data.cases);
@@ -177,17 +193,27 @@ export async function POST(request: Request) {
       return fail(request, sessionId, "工具不存在。", "TOOL_NOT_FOUND", 404);
     }
     if (action === "revise") {
-      const parsed = z.object({ caseId: z.string().min(1).max(100), sourceVersionId: z.string().min(1).max(100), answerText: z.string().trim().min(1).max(8000), note: z.string().trim().min(1).max(1000) }).safeParse(body);
+      const parsed = z.object({ caseId: z.string().min(1).max(100), sourceVersionId: z.string().min(1).max(100), answerText: z.string().trim().min(1).max(8000), note: z.string().trim().min(1).max(1000), reevaluate: z.boolean().optional() }).safeParse(body);
       if (!parsed.success) return fail(request, sessionId, "请填写修订后的回答和修订说明，回答最多8000字。", "INVALID_REVISION", 400);
       const input = parsed.data;
       const item = state.cases.find(c => c.caseId === input.caseId);
       const source = state.versions.find(v => v.id === input.sourceVersionId);
       if (!item || !source || !item.answers[source.id]) return fail(request, sessionId, "源版本或案例不存在。", "REVISION_SOURCE_NOT_FOUND", 404);
       if (state.versions.length >= 20) return fail(request, sessionId, "当前会话最多保存20个候选版本，请先导出再重置。", "VERSION_LIMIT", 429);
+      if (input.reevaluate && state.runs.length >= 20) return fail(request, sessionId, "此会话运行记录已达20条上限，请重置演示数据。", "RUN_LIMIT", 429);
       const revisionId = `manual-${id()}`;
       const note = redact(input.note);
+      const answerText = redact(input.answerText);
+      if (answerText.length > 8000) return fail(request, sessionId, "脱敏后的回答超过8000字限制。", "INVALID_REVISION", 400);
       state.versions.push({ id: revisionId, name: `人工修订 · ${item.caseId}`, model: "人工修订（非模型生成）", promptVersion: "manual-revision-v1", dataSnapshot: source.dataSnapshot, description: `手工编辑：${note}`, sourceVersionId: source.id, changeNote: note });
-      item.answers[revisionId] = { text: redact(input.answerText), generatedAt: new Date().toISOString(), provenance: "manual" };
+      const generatedAt = new Date().toISOString();
+      item.answers[revisionId] = { text: answerText, generatedAt, provenance: "manual" };
+      if (input.reevaluate) {
+        const run: EvalRun = { id: `run-${id()}`, candidateVersionId: revisionId, evaluationVersionId: "eval-v1", createdAt: generatedAt, status: "completed", caseSnapshots: structuredClone([{ ...item, answers: undefined }].map(({ answers: _answers, ...snapshot }) => snapshot)), items: [evaluateCase(item, answerText, generatedAt)] };
+        run.items[0].answerProvenance = "manual";
+        state.runs.unshift(run);
+        recordBehavior(state, item.caseId, "reevaluate");
+      }
       await save(sessionId, state);
       return withSession(request, sessionId, { ...responseState(state, sessionId), message: "已创建独立的人工修订版本，源回答与历史评测未被修改。" });
     }
@@ -219,6 +245,7 @@ export async function POST(request: Request) {
       const generatedVersionId = `generated-${id()}`;
       state.versions.push({ id: generatedVersionId, name: `${sourceVersion.name} · 生成修订`, model, promptVersion: sourceVersion.promptVersion, dataSnapshot: sourceVersion.dataSnapshot, description: "由已配置外部模型现场生成；回答与候选版本单独保存。" });
       c.answers[generatedVersionId] = { text: redact(answer).slice(0, 8000), generatedAt: new Date().toISOString(), provenance: "generated" };
+      recordBehavior(state, c.caseId, "regenerate");
       await save(sessionId, state); return withSession(request, sessionId, responseState(state, sessionId));
     }
     return fail(request, sessionId, `未知操作：${action}`, "UNKNOWN_ACTION", 400);

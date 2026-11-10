@@ -1,0 +1,45 @@
+{
+  "executedAt": "2026-11-10T04:24:41.056Z",
+  "target": "http://127.0.0.1:5173",
+  "checks": [
+    {
+      "name": "overview hides task actions, version comparison and feedback controls",
+      "passed": true
+    },
+    {
+      "name": "task page has one import, export and evaluation action",
+      "passed": true
+    },
+    {
+      "name": "detail order and readable evidence fields",
+      "passed": true,
+      "initialAttempt": {
+        "passed": false,
+        "reason": "Table header was queried as cell instead of columnheader; corrected locator and checked the rendered headings."
+      }
+    },
+    {
+      "name": "manual revision and reevaluation using displayed fund name passes",
+      "passed": true
+    },
+    {
+      "name": "behavior feedback lists actual views and reevaluations; failed clipboard is not logged as copied",
+      "passed": true
+    },
+    {
+      "name": "tools retain structure without task actions or feedback entry",
+      "passed": true
+    },
+    {
+      "name": "mobile layout does not overflow horizontally",
+      "passed": true
+    },
+    {
+      "name": "generated revision automatically reevaluates and supports actual model advisory",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Clipboard permission denied in the browser; no successful-copy event was recorded."
+  ]
+}

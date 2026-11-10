@@ -15,7 +15,8 @@ function month(text: string): string | null {
   return m ? `${m[1]}-${String(Number(m[2])).padStart(2, "0")}` : null;
 }
 function evidenceSentence(answer: string, claim: string, targetPeriod: string): { sentence: string; period: string | null; ambiguous: boolean } | null {
-  const entity = claim.match(/(?:虚构基金|基金|公司)[甲乙丙丁]/)?.[0];
+  // “虚构” is a demo qualifier, not part of the entity identifier shown in the UI.
+  const entity = claim.match(/(?:基金|公司)[甲乙丙丁]/)?.[0];
   if (!entity) return null;
   const metric = claim.match(/收益率|净值|费用|涨幅|跌幅|风险等级|管理费/)?.[0];
   const sentences = answer.match(/[^。！？\n]+[。！？]?/g)?.map((s) => s.trim()).filter(Boolean) ?? [];

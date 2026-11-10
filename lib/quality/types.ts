@@ -37,10 +37,13 @@ export interface Review { id: string; runId: string; caseId: string; decision: R
 export type FeedbackDecision = "confirmed" | "dismissed" | "needs_evidence";
 export interface Feedback { id: string; caseId: string; kind: string; note: string; status: "pending_review" | FeedbackDecision; createdAt: string; source: "synthetic_demo"; resolutionNote?: string; resolvedAt?: string; resolvedRunId?: string; }
 export interface RegressionCase { id: string; runId: string; caseId: string; addedAt: string; candidateVersionId: string; evaluationVersionId: string; caseSnapshot: Omit<QualityCase, "answers">; answerText: string; findings: Finding[]; }
+export type BehaviorType = "answer_view" | "evidence_view" | "answer_copy" | "regenerate" | "reevaluate";
+export interface BehaviorEvent { id: string; caseId: string; type: BehaviorType; createdAt: string; }
 export interface ToolStatus { id: string; name: string; status: "snapshot" | "simulated_timeout" | "configured" | "not_configured"; description: string; }
 export interface SkillInfo { id: string; name: string; version: string; status: "executed" | "spec_only"; rules: string[]; description?: string; }
 export interface QualityState {
   cases: QualityCase[]; versions: CandidateVersion[]; evaluationVersions: EvalVersion[];
   runs: EvalRun[]; reviews: Review[]; feedback: Feedback[]; regressionCases: RegressionCase[]; tools: ToolStatus[]; skills: SkillInfo[];
+  behaviorEvents: BehaviorEvent[];
 }
 export interface QualityApiState extends QualityState { sessionId?: string; }

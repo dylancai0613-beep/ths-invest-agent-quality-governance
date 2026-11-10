@@ -4,8 +4,8 @@
 
 |项目|实际结果|证据及范围|
 |---|---|---|
-|单元与协议测试|34/34通过|artifacts/unit-test-results.json；事实口径、画像配对、否定承诺、未来事件、数字精度、模型mock及证据引用、iFinD协议与保存证据|
-|本地接口|17/17通过|artifacts/api-smoke-results.json；独立会话、评测、复核、反馈处理、回归快照/去重、手工修改和真实复测、历史证据标注|
+|单元与协议测试|35/35通过|artifacts/unit-test-results.json；事实口径、画像配对、否定承诺、未来事件、数字精度、模型mock及证据引用、iFinD协议与保存证据|
+|本地接口|19/19通过|artifacts/api-smoke-results.json；独立会话、评测、复核、反馈处理、回归快照/去重、手工修改和真实复测、历史证据标注|
 |类型/构建/密钥检查|通过|Sites source helper按test→tsc→production build→check-secrets执行成功；源码未包含本地密钥|
 |线上核心功能|9/9通过|artifacts/hosted-core-results.json；使用现有拥有者服务访问凭证，仅在内存传递，未保存凭证|
 |线上实时iFinD连接|未通过|artifacts/ifind-hosted-probe.json：应用502，上游HTTP522。原因未定；保留失败记录，没有替换成成功|
@@ -22,3 +22,7 @@
 源码、部署成功与证据范围分别列示。最新交付的版本和压缩包大小以交付目录的00_交付说明.md和验收清单.json为准。
 
 新增匿名真实模型验收：artifacts/model-public-results.json，4/4通过；无拥有者服务凭证，无登录，独立新会话。视频现为133秒、1596帧，新增真实模型操作画面。
+
+## 深色界面与简化增量
+
+本轮35/35单元与协议、19/19本地接口检查通过，另有浏览器实际走查：保留概览、任务操作集中、问答与AI回答同卡、判断依据字段、人工修订复测、真实模型生成后自动复测、行为记录及390px手机布局。证据位于artifacts/ui-dark。复制操作受当前浏览器权限限制时会提示失败，且不记录成功复制行为。工具与Skills功能结构保持，后续另议。

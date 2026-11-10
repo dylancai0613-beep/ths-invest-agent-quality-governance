@@ -4,8 +4,8 @@ export default function ManualRevision({ answer, disabled, onSave }: { answer: s
   const [text, setText] = useState(answer);
   const [note, setNote] = useState("");
   const [pending, setPending] = useState(false);
-  return <details className="detail-card"><summary style={{ cursor: "pointer", fontWeight: 600 }}>人工修订回答并复测</summary>
-    <p>保存为独立版本，保留源回答、数据快照和修改说明。此操作不调用外部模型。</p>
+  return <details className="detail-card"><summary style={{ cursor: "pointer", fontWeight: 600 }}>人工修订建议与复测</summary>
+    <p>根据判断依据调整回答，填写修改说明后保存并复测。</p>
     <label className="field-label" htmlFor="revision-answer">修订后的回答</label>
     <textarea id="revision-answer" className="field" rows={5} maxLength={8000} value={text} onChange={e => setText(e.target.value)} />
     <label className="field-label" htmlFor="revision-note" style={{ marginTop: 10 }}>修订说明</label>
