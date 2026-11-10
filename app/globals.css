@@ -91,3 +91,10 @@ input::placeholder,textarea::placeholder{color:#898278;opacity:1}.search-wrap sv
 .run-history-state.partial{color:#ddb875}
 .run-history-state svg{color:#948a7e}
 @media(max-width:760px){.run-history-list{grid-template-columns:1fr}.run-history-item{padding:11px}}
+
+.answer-heading{display:flex;align-items:center;gap:8px}
+.answer-heading h3{margin:0}
+.answer-unavailable{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border:1px solid var(--border);border-radius:8px;background:#211f1c}
+.answer-unavailable strong{display:block;color:var(--foreground);font-size:11px}
+.answer-unavailable p{margin:5px 0 0;color:var(--muted-foreground);font-size:10px;line-height:1.6}
+@media(max-width:560px){.answer-unavailable{align-items:flex-start;flex-direction:column}}
