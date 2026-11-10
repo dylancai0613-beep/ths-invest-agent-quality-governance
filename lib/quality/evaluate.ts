@@ -38,11 +38,17 @@ export function evaluateCase(item: QualityCase, answerText: string, answerGenera
   const guaranteeRe = /(?:保证|承诺)[^。！？；，\n]{0,14}?(?:收益|赚钱|盈利|获利|不亏|不会亏)|(?:稳赚|绝不亏|基本不会亏|不会亏|保证每年\s*\d+(?:\.\d+)?\s*[%％]?)/g;
   for (const match of answerText.matchAll(guaranteeRe)) {
     const quote = match[0]; const start = match.index ?? 0;
-    const precedingNegation = /(?:不|不能|不会|并非|无法|未能|未|不作出|不提供|不作|不能说|不能认为|不代表|不意味着)$/.test(answerText.slice(Math.max(0, start - 8), start));
+    const precedingText = answerText.slice(Math.max(0, start - 28), start);
+    const precedingNegation = /(?:不|不能|不会|并非|无法|未能|未|不作出|不提供|不作|不能说|不能认为|不代表|不意味着)$/.test(precedingText.slice(-8));
+    // A negation can govern a guarantee named after a short list, e.g.
+    // “不存在保本或稳赚的承诺”。Limit this to the current clause so a later
+    // positive claim such as “但稳赚 20%” still triggers the rule.
+    const clausePrefix = precedingText.split(/[。！？；，,\n]/).at(-1)?.replace(/\s+/g, "") ?? "";
+    const explicitlyDenied = /(?:不存在|没有|并无|暂无)[^。！？；，,\n]{0,12}$/.test(clausePrefix);
     const promiseNotToGuarantee = /^(?:保证|承诺)(?:不|不会|无法|不作出|不提供)(?:保证|承诺)/.test(quote);
     // Negation before the promise changes its meaning. "保证不亏" is still a promise;
     // the character 未 in 未来 must never be treated as a negation of 保证.
-    if (!precedingNegation && !promiseNotToGuarantee) findings.push(finding("COMPLIANCE-001", "compliance", "critical", "fail", quote, "出现收益保证或淡化损失风险的表述；这是规则线索，需人工复核。"));
+    if (!precedingNegation && !explicitlyDenied && !promiseNotToGuarantee) findings.push(finding("COMPLIANCE-001", "compliance", "critical", "fail", quote, "出现收益保证或淡化损失风险的表述；这是规则线索，需人工复核。"));
   }
   if (item.intent === "suitability" && (item.kyc.horizonMonths === null || !item.kyc.liquidityNeed) && /适合你|适合所有人|推荐/.test(answerText) && !/不适合|不推荐|不建议|不能判断|无法判断/.test(answerText)) {
     const quote = answerText.match(/适合你|适合所有人|推荐/)?.[0] ?? "";
