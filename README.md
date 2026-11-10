@@ -1,94 +1,83 @@
 # 投资 Agent 回答质量与个性化治理平台
 
-面向投资 AI 产品团队的回答质检工作台：对预置问答执行确定性规则，展示证据与待核验项，记录人工复核，并比较回答版本。所有预置案例和快照为合成数据，不代表真实证券或产品。
+为投资 AI 产品、运营和复核人员提供可追溯的回答质检：导入问答、执行规则、核对证据、人工复核、修改回答、复测和版本比较。
 
-## 当前状态（2026-11-10）
+## 运行与验证状态
 
-- Sites Vinext + React/TypeScript、Cloudflare Worker + D1 架构已实现。本地迁移已执行。生产构建和 secret scan 已在已推送版本 `d715065cc4888500a03171de4946c74a2195e630` 通过；之后有 judge/UI 更新，v2 仍需再次验证。
-- `npm test`：Node 24 环境下 31 条测试通过；`npm run typecheck` 通过。`npm run test:api` 的本地 API 冒烟记录见 `artifacts/api-smoke-results.json`，15/15 通过，目标为 `http://127.0.0.1:5173`。
-- 已操作并留存 10 张截图：`artifacts/screenshots/01-overview.jpg` 至 `artifacts/screenshots/10-mobile.jpg`，覆盖概览、评测、回答证据、人工复核、回归、版本比较、iFinD 核验、超时、事件时点和移动端页面。
-- iFinD MCP 有真实查询记录，限于允许列表证券、指定交易日、不复权收盘价、人民币元。`artifacts/ifind-local-result.json` 记录 300033.SZ 在 2026-11-06 的 202.7 元；`artifacts/ifind-verification-result.json` 将用户提供的 210 元与 202.7 元比较，给出 MISMATCH。该结果仅证明这一条限定数值主张，不代表实时推送或普遍事实核验能力。该查询的验证口径以返回行内明确日期为优先；若行内日期与显式参数冲突则待核验。无行日期时参数必须明确匹配目标日，“最新”或缺失时待核验。
-- 模型服务尚未配置。仅有 mock 协议、脱敏和证据拒绝相关测试；没有 live model 调用，不能称已完成实际模型评测或生成。
-- v1 已部署：[投资 Agent 回答质量与个性化治理平台](https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site)，版本 1 对应 commit `d715065cc4888500a03171de4946c74a2195e630`，deployment `appgdep_6af20b1fed1c819197cb3a6fb487ded4` 状态 succeeded。站点为 owner-only；浏览器会显示 ChatGPT 登录门，尚未验证用户登录后的评审访问，不能称匿名可访问。已有受限线上 smoke 为 7/8：页面、D1 案例加载、A/B 执行和保存、复核/回归快照、反馈处理、模型未配置状态均通过；线上 iFinD 查询 502，排查中，见 `artifacts/hosted-smoke-results.json`。
+网站：[投研回答质检台](https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site)。已通过 Sites 部署。访问权限目前仅拥有者，浏览器需要 ChatGPT 登录；尚未开放为评审匿名访问。功能验证基准为代码提交 `468ff10b02259c3643ea889e8a10486744cd81fc`（版本2），文档整理不改变应用功能。
 
-A/B 对照截图显示同一组 20 条预置合成案例中，候选 A 有 13 条规则失败、候选 B 有 0 条规则失败。这是预置回答与确定性规则的结果，不是模型变好或现场 AI 评测。
+- 32 项单元与协议测试通过；17 项本地接口检查通过；9 项拥有者服务访问下的线上核心检查通过。
+- 生产构建、TypeScript 检查和密钥扫描通过。线上数据库已实际保存评测、复核、反馈、回归快照与人工修订结果。
+- 浏览器实际完成“6.4%错误回答→人工改为2.4%→独立版本保存→复测通过→对照历史失败结果”。截图见 artifacts/screenshots/11 至14。
+- 外部模型未配置。生成与语义评测接口已实现并做 mock、脱敏和证据引用测试，没有真实模型调用记录。
+- 本地 iFinD 实际查询成功；云端在线查询观察到HTTP522（应用返回502），原因尚未确定。线上可以主动选择已保存历史证据核验，界面明确显示原始查询时间，不会自动替换或冒充在线查询。
 
-事实准确率只对已明确核验的配置 evidence claim 计算：单位/期间明确不匹配属于已核验但不匹配；缺少期间或证据歧义属于未核验。核验覆盖率以配置的 evidence claim 数为分母，并不表示系统已覆盖所有回答事实或完成通用主张抽取。详细记录见 `docs/test-results.md` 和 `docs/known-limitations.md`。
+所有预置投资问答、画像、基金数据和事件上下文均为合成。iFinD历史证据是实际返回值，与合成案例分开。数值202.7元只对应300033.SZ、2026-11-06、不复权收盘价、人民币元，不能外推为其他日期或投资结论。
 
-## 技术结构与 Skills
+## 主链路
 
-- Sites Vinext + React + TypeScript；Cloudflare Worker 提供 API；D1 保存会话快照。
-- Skills 的 `rubric.json` 静态打包，决定有效 rule IDs；其中 relevance、fact、freshness、personalization、compliance 有确定性代码实现。行情事件样例用结构化 `eventContext` 记录发生/公开时间、来源和可引用短语，当前种子里的事件全部是合成情景，不是真实新闻。`intent-router` 使用输入案例的既定意图，不做模型意图识别；`case-diagnosis` 是规范资产，当前不执行自动归因。`SKILL.md` 与 `examples.json` 是规范说明和样例。
-- 当前模型配置为空。只由管理员在服务端配置 `MODEL_API_BASE`、`MODEL_API_KEY` 和 `MODEL_NAME`，通过 OpenAI 兼容 `/chat/completions` 调用；用户不能传入任意地址。
-- iFinD 行情查询经 `POST /api/tools/ifind`。若回答中给出待核数值，界面可将其与工具返回值作限定比较；核验依据须逐项检查证券代码、查询日（优先看返回数据行的日期；若行内无日期，则要求工具参数明确指定查询日）、不复权方式、人民币元单位和来源。若行内明确日期与目标日期一致，可依据行日期；行内日期与显式查询参数互相冲突时待核验。若行内没有日期，则必须有与目标日一致的显式参数；参数为“最新”且无行内日期时待核验。查询成功不等于其他事实已核验。
+1. 选择预置问答或导入匿名合成JSON，选择回答版本并评测。
+2. 查看相关性、事实、时效、画像、合规与隐私线索及其原文和证据。
+3. 填写复核原因，确认问题、判为误报或要求补充证据。
+4. 处理用户反馈，将已确认案例加入去重回归集并导出。
+5. 在详情内人工修订回答并复测，或配置模型后调用生成工具。原始版本与历史运行保留。
+6. 在相同案例上比较两个已保存运行，单列未覆盖案例；待核验不算修复。
 
-## 本地启动（PowerShell）
+## 目录
 
-Node.js 建议使用 24（最低要求见 package.json）。在项目目录执行：
+```text
+app/                         页面入口与 /api/quality、/api/tools/*
+components/quality/          工作台、证据抽屉、人工修订表单
+lib/quality/                 类型、合成案例、规则评测、Skill配置
+lib/integrations/            iFinD HTTP MCP、限定数字核验、模型judge
+skills/*/                   SKILL.md、rubric.json、examples.json
+data/demo/                   合成导入模板
+data/snapshots/              实际iFinD历史返回（非本次在线查询）
+db/、drizzle/                D1表结构与不可重复执行的建表迁移
+tests/、scripts/             测试、启动、配置与密钥检查
+docs/                        方案、字段、规则、边界、AI记录与验收说明
+artifacts/                   脱敏验证记录与实际操作截图
+```
+
+## 本地启动
+
+使用Node.js24与npm。在本项目目录执行：
 
 ```powershell
 npm run install:ci
 npm run build
-npx wrangler d1 execute DB --local --config dist/server/wrangler.json --file drizzle/0000_mighty_sabretooth.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_mighty_sabretooth.sql
 .\scripts\dev-local.ps1
 ```
 
-D1 SQL 迁移对每个新的本地 D1 状态执行一次；已创建 `quality_sessions` 表后不要重复执行同一建表 SQL。开发脚本默认启动 5173 端口，可用 `-Port 5174` 指定端口。首次安装请不要和其他依赖安装任务并行运行。
-
-项目验证命令：
+迁移只对全新的本地D1执行一次，已创建quality_sessions后不要重复建表。现有项目依赖和本地数据库均已就绪，可直接执行启动脚本。默认地址http://127.0.0.1:5173。首次运行若npm未在PATH中，本机启动脚本会复用D盘npm入口。
 
 ```powershell
 npm test
-npm run test:api
 npm run typecheck
+npm run test:api
 ```
 
-`npm run test:api` 需要本地站点在 5173 端口可访问；通过后生成或更新 `artifacts/api-smoke-results.json`。构建预览可在 build 后执行 `npm start`。
+接口测试需要本地服务正在运行；会创建独立测试会话。npm start用于已构建Worker的本地预览。源码仓库不得包含node_modules、.dev.vars、运行数据库或真实密钥。
 
-## 本地 iFinD 配置
+## AI与Skills
 
-若已拥有并获准使用 iFinD MCP 配置，可在本机运行：
+采用固定流程，不要求自主规划Agent。五项确定性检查由TypeScript执行，并静态载入rubric.json规则编号；SKILL.md与examples.json供审阅和后续模型扩展。意图使用案例字段，case-diagnosis是规范资产。AI judge加载七项rubric，检查结构、原文引用与证据ID；结果是独立的待人工确认建议，不覆盖规则指标。
 
-```powershell
-node scripts/configure-ifind-local.cjs <mcp_config.json的绝对路径>
-```
+服务端可配置MODEL_API_BASE、MODEL_API_KEY、MODEL_NAME，调用兼容/chat/completions接口。用户输入不能指定服务地址。密钥放本地被忽略的.dev.vars或Sites秘密配置；不要通过聊天、浏览器字段、源码传递密钥。模型未配置时界面如实显示。
 
-脚本只把凭证写入 git 忽略的 `.dev.vars`，不会打印凭证。不要把 `.dev.vars`、模型密钥或真实用户数据提交到仓库。此脚本不等于部署端已配置 iFinD。
+## 数据工具与边界
 
-## 源码目录
+iFinD凭证为IFIND_MCP_TOKEN。可用scripts/configure-ifind-local.cjs从已有且获准使用的配置写入本地.dev.vars。在线请求和历史证据模式分开操作；历史模式仅支持上述固定证券/日期/字段，保留retrievedAt和servedAt。返回行日期优先，无行日期时要求明确参数日期；日期冲突、缺失和含混均待核验。
 
-```text
-app/          页面和 API 路由（quality、ifind、judge）
-components/   工作台页面组件与 UI 基础组件
-lib/          评测规则、iFinD 和模型辅助复核逻辑
-db/           D1 数据访问和 Drizzle 表结构
-worker/       Cloudflare Worker 入口
-scripts/      Sites 开发、安装、测试及本地凭证配置脚本
-skills/       版本化规则 rubric 与规范文档
-data/         导入模板和合成演示材料
-tests/        Node 24 单元、协议和评测测试
-docs/         产品方案、架构、验收和边界说明
-artifacts/    测试结果、行情证据及脱敏操作截图
-```
-## 文档与交付
+画像可以改变解释深度与适配性判断，不能改变相同主体、期间、单位和时点的事实。FRESHNESS检查区分事件发生、公开和回答生成时间。规则只提供风险线索，不构成金融或法律合规认证。
 
-- 方案和实际状态：`docs/product-plan.md`
-- 架构、字段与规则：`docs/architecture.md`、`docs/data-dictionary.md`、`docs/evaluation-rules.md`
-- 测试计划与实际记录：`docs/test-plan.md`、`docs/test-results.md`
-- AI 协作记录、限制和交接顺序：`docs/ai-usage-and-validation.md`、`docs/known-limitations.md`、`docs/handoff.md`
-- Skill 规范：`skills/`
-- 可直接提交的导入请求样例：`data/demo/import-template/cases.json`
+一次评测最多20条、导入最多50条、会话运行最多20次、状态上限1.5MB。分母为零显示不适用；指标只覆盖配置证据和已识别主张，不代表所有事实。详见docs/known-limitations.md。
 
-单次同步评测最多 20 条、导入最多 50 条、单会话运行历史最多 20 条；会话数据大小上限为 1.5 MB。最终提交 ZIP 需不超过 30 MB。交付文件优先放在 `D:\Codex\outputs`，临时文件放在 `D:\Codex\work`。v1 已部署但评审需在 ChatGPT 登录后访问；如要启用模型语义辅助复核，需由有权管理员配置模型服务地址、密钥和模型名。不要在聊天中发送密钥。
+## 源码仓库
 
+Sites私有Git： https://git.chatgpt-team.site/e8eae08c-0630-4fdc-b427-d5e3e4721d81/appgprj_6af1b8ba9528819190bced0d8e8c39b6.git 。访问需要拥有者授权；交付目录另含不带密钥的完整源码ZIP。
 
+## 交付材料
 
-
-
-
-
-
-
-
-
-
+D盘交付目录：D:\Codex\outputs\同花顺笔试_第二题。包含源码归档、方案、AI记录、测试报告、117秒操作截图演示视频和必要证据。视频有中文说明、无配音，明确为实际操作截图整理，非连续录屏。提交包需小于30MB；不自动提交招聘网站。

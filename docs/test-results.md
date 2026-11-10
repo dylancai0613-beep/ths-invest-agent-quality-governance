@@ -1,27 +1,22 @@
 # 测试与验证记录
 
-更新日期：2026-11-10（Asia/Shanghai）。本地功能已通过单元/协议测试、API smoke 和手工浏览器走查。v1 已部署，但站点为 owner-only 且浏览器要求登录；线上受限 smoke 为 7/8，iFinD 查询 502 正在排查。请注意下列通过结果所对应的代码版本。
+更新：2026-11-10，北京时间。功能代码验证基准：468ff10b02259c3643ea889e8a10486744cd81fc。
 
-| 项目 | 实际结果 | 证据或边界 |
+|项目|实际结果|证据及范围|
 |---|---|---|
-| 单元与协议测试 | 31/31 通过 | `artifacts/unit-test-results.json`；Node 24。覆盖 iFinD 日期来源、未来事件上下文、事实口径、画像不变、承诺表达、模型 judge mock 与脱敏等。无 live model 调用。 |
-| TypeScript 类型检查 | 通过 | 负责人确认 `npm run typecheck` 通过。 |
-| 生产构建与 secret scan | 已通过 | Source helper 对推送版本 `d715065cc4888500a03171de4946c74a2195e630` 完成 test → typecheck → production build → secret scan。之后又有 judge/UI 补丁，v2 仍需再次运行完整流程。 |
-| D1 本地迁移 | 已执行成功 | 使用 `drizzle/0000_mighty_sabretooth.sql`。受限线上 smoke 已验证案例加载和 A/B 评测保存；不等于用户登录后的独立验收。 |
-| API smoke | 15/15 通过 | `artifacts/api-smoke-results.json`；target `http://127.0.0.1:5173`；时间 2026-11-09T18:01:07.851Z（北京时间 2026-11-10 02:01:07）。含反馈处理、确认后去重加入回归集、未确认拦截和历史快照。 |
-| 浏览器操作走查 | 已完成并留图 | `artifacts/screenshots/01-overview.jpg` 至 `10-mobile.jpg`：概览、评测、回答证据、人工复核、确认后回归集、版本比较、iFinD 核验、超时、事件时点、移动端。 |
-| A/B 合成演示结果 | 同一 20 条案例中 A 有 13 条规则失败，B 有 0 条 | 见 `06-comparison.jpg`。这些是预置合成候选答案与确定性规则的结果，不是模型性能提升，也不是现场 AI 评测。 |
-| 事实核验指标单测 | 配置 claim 4/4 核验，1/4 匹配 | 明确的单位/期间/数值错误记为核验后不匹配；缺失/歧义保持 unverified。分母只包括配置 evidence claims 与被规则识别的无证据行情主张，不代表通用事实抽取。 |
-| iFinD 查询与数值对照 | 300033.SZ，2026-11-06，不复权收盘价 202.7 元；210 元输入得到 MISMATCH | `artifacts/ifind-local-result.json`、`artifacts/ifind-verification-result.json`。仅覆盖该证券、日期、字段、复权方式及人民币元单位，不等于全部回答事实已核验。 |
-| 模型 live 调用 | 未执行 | 管理员模型配置未提供。模型协议/语义评测测试均使用 mock。 |
-| v1 部署与受限线上 smoke | 部署 succeeded；7/8 通过 | `https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site`；deployment `appgdep_6af20b1fed1c819197cb3a6fb487ded4`，commit `d715065cc4888500a03171de4946c74a2195e630`，env revision 1。见 `artifacts/hosted-smoke-results.json`。站点 owner-only，浏览器有 ChatGPT 登录门；未验证用户登录后的评审访问。iFinD 实际查询 502，排查中。 |
-| 演示视频 | 已生成，待解码验证 | `D:\Codex\outputs\同花顺笔试_第二题\02_产品操作截图演示.mp4`，99 秒；由真实操作截图整理，非连续录屏。ffmpeg 解码检查待完成。 |
-| 最终交付包 | pending | 生成 ZIP 后确认不超过 30 MB。 |
-| lint | 未运行 | 不声称 lint 通过。 |
+|单元与协议测试|32/32通过|artifacts/unit-test-results.json；事实口径、画像配对、否定承诺、未来事件、数字精度、模型mock及证据引用、iFinD协议与保存证据|
+|本地接口|17/17通过|artifacts/api-smoke-results.json；独立会话、评测、复核、反馈处理、回归快照/去重、手工修改和真实复测、历史证据标注|
+|类型/构建/密钥检查|通过|Sites source helper按test→tsc→production build→check-secrets执行成功；源码未包含本地密钥|
+|线上核心功能|9/9通过|artifacts/hosted-core-results.json；使用现有拥有者服务访问凭证，仅在内存传递，未保存凭证|
+|线上实时iFinD连接|未通过|artifacts/ifind-hosted-probe.json：应用502，上游HTTP522。原因未定；保留失败记录，没有替换成成功|
+|历史证据核验|通过|线上主动选择historical_snapshot，原始查询时间2026-11-09T18:04:55.599Z，原价202.7元，对照210元为MISMATCH|
+|浏览器实际主链路|通过已走查部分|artifacts/screenshots/01至14，含实际6.4→2.4手工修订、独立版本复测和对照|
+|重启持久化|通过已走查部分|停止并重启本地服务后，同一浏览器仍显示02:02:16运行及1条回归记录；没有声称跨设备账号同步|
+|117秒视频|生成并完整解码通过|H.264 MP4，1920×1080，12fps，1404帧；非连续录屏，中文字幕，无配音|
+|真实模型调用|未执行|未提供运行时模型配置；mock测试不是live模型验证|
+|匿名评审访问|尚未开放|https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site 当前仅拥有者，可见ChatGPT登录门；未绕过用户登录，也没有改变共享权限|
+|lint|未运行|不声称通过|
 
-需补证：judge/UI 补丁后的 v2 完整验证链；用户登录后的评审访问；线上 iFinD 502 的原因与修复验证。模型配置与最终 ZIP 仍待提供/完成。
+事实准确率分母包含明确判定的数值、单位和期间不匹配；含混或缺失不计成功核验。配置的四条A事实为匹配1/4、覆盖4/4。20条预置A/B示例曾显示13条规则失败变为0；这是规则案例结果，不是普遍模型准确率。
 
-
-
-
-
+源码、部署成功与证据范围分别列示。最新交付的版本和压缩包大小以交付目录的00_交付说明.md和验收清单.json为准。

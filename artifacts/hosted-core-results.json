@@ -1,0 +1,48 @@
+{
+  "executedAt": "2026-11-10T02:20:18.158Z",
+  "target": "https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site",
+  "access": "existing owner-private service access; not anonymous browser access",
+  "scope": "Core product, historical evidence and manual revision; live upstream availability is separately recorded in ifind-hosted-probe.json",
+  "results": [
+    {
+      "name": "hosted UI responds behind existing private access boundary",
+      "status": "pass"
+    },
+    {
+      "name": "hosted D1 initialization and anonymous demo cases load",
+      "status": "pass"
+    },
+    {
+      "name": "hosted A/B evaluations execute and persist",
+      "status": "pass"
+    },
+    {
+      "name": "hosted review and regression snapshots are saved",
+      "status": "pass"
+    },
+    {
+      "name": "hosted feedback resolution is persisted",
+      "status": "pass"
+    },
+    {
+      "name": "hosted iFinD server secret is configured without exposing its value",
+      "status": "pass"
+    },
+    {
+      "name": "hosted historical evidence mode is explicit and verifies the saved dated response",
+      "status": "pass"
+    },
+    {
+      "name": "hosted manual revision and re-evaluation preserve the original version",
+      "status": "pass"
+    },
+    {
+      "name": "unconfigured hosted model remains explicit",
+      "status": "pass"
+    }
+  ],
+  "runIds": [
+    "run-b861b5ec-0e4d-4066-94a3-a5504f49ff91",
+    "run-0f343b11-d059-404e-97ec-ef3428989435"
+  ]
+}
