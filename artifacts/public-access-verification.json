@@ -1,0 +1,18 @@
+{
+  "executedAt": "2026-11-10T02:57:31.936Z",
+  "target": "https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site",
+  "configuredAccess": "public, policy revision 2",
+  "access": "anonymous without login, token or cookies",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "loginGate": false
+    },
+    {
+      "path": "/api/quality",
+      "status": 200,
+      "loginGate": false
+    }
+  ]
+}

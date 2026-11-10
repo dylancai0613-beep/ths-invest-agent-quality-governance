@@ -34,3 +34,15 @@
 ## 收尾记录（2026-11-10）
 
 Luna子代理承担前后端与规范文档开发，额度停止后由Codex主代理接手。主代理完成手工修订真实闭环、显式历史证据路径、32项测试、17项本地接口和9项线上核心检查。线上直连上游HTTP522单独保留失败证据。AI judge区分事后审计材料与回答时已知信息，未实际调用运行时模型。视频117秒，由真实操作截图整理并通过完整解码。没有记录或输出密钥，没有将测试数据称为实际用户数据。
+
+## 2026-11-10 真实模型接入增量验收
+
+已接入 DeepSeek deepseek-flash；本地与线上均完成真实生成、独立版本保存、规则复测和语义judge，各4/4检查通过。证据见 artifacts/model-local-results.json 与 model-hosted-results.json；仅为限定案例端到端验收，不代表模型整体质量。
+
+用户已授权并设为public（权限修订2），但匿名实测仍返回托管平台登录门（HTTP401）；免登录评审访问尚未通过。未把服务访问凭证暴露给评审，也未代用户登录。
+
+修正DeepSeek默认思考模式消耗有限输出预算的问题；修正Workers不支持redirect:error的问题，改用manual并将3xx视为失败；明确judge的findings只包含问题，pass必须为空数组，保留服务端拒绝矛盾结果。模型接口说明见https://api-docs.deepseek.com/api/create-chat-completion/ 。先前“未配置”记录属于历史阶段，不代表当前状态。
+
+### 公开访问传播完成后的最终验证
+
+站点已设为public（权限修订2）；匿名首页和/api/quality均返回200，浏览器免登录打开工作台，匿名真实模型主链路4/4通过。此前登录门在权限传播后消失。 证据见artifacts/public-access-verification.json、model-public-results.json。最终视频133秒，新增真实模型生成与复核截图，完整解码通过后交付。此前117秒视频与401结果属于早期记录。

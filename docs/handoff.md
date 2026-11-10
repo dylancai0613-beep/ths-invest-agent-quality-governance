@@ -1,6 +1,6 @@
 # 回来后的操作顺序
 
-1. 打开https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site，使用自己的ChatGPT账号登录。当前仅拥有者，正式给评审前需要明确选择共享方式。
+1. 打开https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site。站点已设为public（权限修订2）；匿名首页和/api/quality均返回200，浏览器免登录打开工作台，匿名真实模型主链路4/4通过。此前登录门在权限传播后消失。
 2. 点击开始规则评测，打开case-fact-1，查看6.4%与合成证据2.4%的差异。
 3. 确认复核后加入回归集；展开“人工修订回答并复测”，填正确数字和说明，保存独立版本并查看对比。
 4. 工具页填210，主动选择“使用历史证据核验”。原始iFinD价格202.7元，日期/复权/单位全部匹配才可比较。线上在线直连观察到HTTP522，本地在线调用有成功记录。

@@ -2,9 +2,10 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 let token = '';
-const hosted = process.argv.includes('--hosted');
+const publicAccess = process.argv.includes('--public');
+const hosted = publicAccess || process.argv.includes('--hosted');
 const base = hosted ? 'https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site' : 'http://127.0.0.1:5173';
-if (hosted) token = await new Promise(resolve => {
+if (hosted && !publicAccess) token = await new Promise(resolve => {
   let text = ''; const tty = process.stdin.isTTY;
   if (tty) process.stdin.setRawMode(true);
   process.stderr.write('Ready for existing Site service access on hidden stdin.\n');
@@ -15,7 +16,7 @@ if (hosted) token = await new Promise(resolve => {
 let cookie = ''; const results = [], evidence = {}; let initial, generated, evaluated;
 async function request(path, body) {
   const r = await fetch(base + path, { method: body ? 'POST' : 'GET', redirect: 'error', signal: AbortSignal.timeout(60000), headers: { ...(token ? { 'OAI-Sites-Authorization': `Bearer ${token}` } : {}), ...(cookie ? { Cookie: cookie } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
-  const next = r.headers.get('set-cookie'); if (next) cookie = next.split(';')[0];
+  const next = r.headers.getSetCookie().find(value => value.startsWith('quality_session=')); if (next) cookie = next.split(';')[0];
   const text = await r.text(); let data; try { data = JSON.parse(text); } catch { data = { notice: 'Non-JSON response' }; }
   assert.equal(r.status, 200, JSON.stringify({ status: r.status, notice: data.notice, error: data.error })); return data;
 }
@@ -40,6 +41,6 @@ await check('real AI judge returns validated evidence-linked advisory without ch
   const state = await request('/api/quality'); assert.deepEqual(state.runs.find(r => r.id === evaluated.id), evaluated); evidence.judge = d;
 });
 mkdirSync('artifacts', { recursive: true });
-writeFileSync(`artifacts/model-${hosted ? 'hosted' : 'local'}-results.json`, JSON.stringify({ executedAt: new Date().toISOString(), target: base, access: hosted ? 'existing owner service access; browser audience validated separately' : 'fresh local session', scope: 'one actual generation and one actual semantic assessment; not a model performance benchmark', results, evidence }, null, 2));
+writeFileSync(`artifacts/model-${publicAccess ? 'public' : hosted ? 'hosted' : 'local'}-results.json`, JSON.stringify({ executedAt: new Date().toISOString(), target: base, access: publicAccess ? 'anonymous public access, no bearer token or login; fresh cookie session' : hosted ? 'existing owner service access; browser audience validated separately' : 'fresh local session', scope: 'one actual generation and one actual semantic assessment; not a model performance benchmark', results, evidence }, null, 2));
 console.log(`${results.filter(r => r.status === 'pass').length}/${results.length} live model checks passed.`);
 if (results.some(r => r.status === 'fail')) process.exitCode = 1;

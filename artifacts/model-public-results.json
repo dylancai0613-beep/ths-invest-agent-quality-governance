@@ -1,0 +1,114 @@
+{
+  "executedAt": "2026-11-10T02:58:00.297Z",
+  "target": "https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site",
+  "access": "anonymous public access, no bearer token or login; fresh cookie session",
+  "scope": "one actual generation and one actual semantic assessment; not a model performance benchmark",
+  "results": [
+    {
+      "name": "runtime model configuration is available without a key in the response",
+      "status": "pass"
+    },
+    {
+      "name": "real model generates an independent persisted answer version",
+      "status": "pass"
+    },
+    {
+      "name": "generated answer can be evaluated with rule evidence and kept in history",
+      "status": "pass"
+    },
+    {
+      "name": "real AI judge returns validated evidence-linked advisory without changing rule scores",
+      "status": "pass"
+    }
+  ],
+  "evidence": {
+    "configuration": {
+      "configured": true,
+      "model": "deepseek-flash",
+      "notice": "模型仅收到脱敏后的必要问题、回答、画像与证据。"
+    },
+    "generated": {
+      "version": {
+        "id": "generated-ad9352ce-4417-4c6b-8b81-d5fded252317",
+        "name": "候选 B · 修订（预置） · 生成修订",
+        "model": "deepseek-flash",
+        "promptVersion": "prompt-v2",
+        "dataSnapshot": "synthetic-snapshot-v1",
+        "description": "由已配置外部模型现场生成；回答与候选版本单独保存。"
+      },
+      "caseId": "case-fact-1",
+      "answer": {
+        "text": "根据你提供的合成演示材料，虚构基金甲在“2026年10月”这一期的收益率记录为 **2.4%**。需要说明：该数值来自标注为“合成证据快照（非真实行情）”的演示数据，不能视为真实基金业绩或公开行情；也不构成收益承诺或投资建议。\n\n另外，你的风险承受能力为低，但投资期限和流动性需求尚未提供。如需进一步评估该产品是否匹配，请补充这两项信息。",
+        "generatedAt": "2026-11-10T02:57:56.811Z",
+        "provenance": "generated"
+      }
+    },
+    "ruleRun": {
+      "id": "run-bc0c05c4-0395-4b1f-8b48-aa597f3bffdf",
+      "candidateVersionId": "generated-ad9352ce-4417-4c6b-8b81-d5fded252317",
+      "evaluationVersionId": "eval-v1",
+      "createdAt": "2026-11-10T02:57:57.750Z",
+      "status": "completed",
+      "caseSnapshots": [
+        {
+          "caseId": "case-fact-1",
+          "question": "虚构基金甲最近一期收益率是多少？",
+          "intent": "fact_query",
+          "askedAt": "2026-11-09T10:00:00+08:00",
+          "kyc": {
+            "profileId": "anon-case-fact-1",
+            "experience": "beginner",
+            "riskTolerance": "low",
+            "horizonMonths": null,
+            "liquidityNeed": null,
+            "purpose": null
+          },
+          "synthetic": true,
+          "expectedChecks": [
+            "avoid_guaranteed_returns",
+            "preserve_uncertainty"
+          ],
+          "evidence": [
+            {
+              "id": "ev-case-fact-1",
+              "claim": "虚构基金甲2026年10月收益率",
+              "value": 2.4,
+              "unit": "%",
+              "period": "2026-10",
+              "effectiveAt": "2026-10-31T16:00:00+08:00",
+              "publishedAt": "2026-11-01T09:00:00+08:00",
+              "source": "合成证据快照（非真实行情）",
+              "synthetic": true
+            }
+          ]
+        }
+      ],
+      "items": [
+        {
+          "caseId": "case-fact-1",
+          "answerText": "根据你提供的合成演示材料，虚构基金甲在“2026年10月”这一期的收益率记录为 **2.4%**。需要说明：该数值来自标注为“合成证据快照（非真实行情）”的演示数据，不能视为真实基金业绩或公开行情；也不构成收益承诺或投资建议。\n\n另外，你的风险承受能力为低，但投资期限和流动性需求尚未提供。如需进一步评估该产品是否匹配，请补充这两项信息。",
+          "answerProvenance": "generated",
+          "overallStatus": "pass",
+          "findings": [],
+          "reviewStatus": "pending",
+          "factNumerator": 1,
+          "factDenominator": 1,
+          "verifiedNumerator": 1,
+          "verifiedDenominator": 1
+        }
+      ]
+    },
+    "judge": {
+      "status": "completed",
+      "model": "deepseek-flash",
+      "skillVersion": "intent-router@1.0.0,relevance-check@1.0.0,fact-extract@1.0.0,freshness-check@1.0.0,personalization-check@1.0.0,compliance-check@1.0.0,case-diagnosis@1.0.0",
+      "createdAt": "2026-11-10T02:57:59.714Z",
+      "result": {
+        "overallStatus": "pass",
+        "summary": "回答准确引用合成证据中2026年10月收益率2.4%，并明确标注为非真实行情的演示数据、不构成收益承诺或投资建议；证据publishedAt（2026-11-01）早于回答时点（2026-11-10），无未来信息误用；同时指出用户风险承受能力为低但期限与流动性信息缺失，提示补充信息，符合个性化与合规要求。",
+        "findings": []
+      },
+      "notice": "这是模型辅助判断，尚未经人工确认；独立展示，不覆盖规则结果、不纳入规则指标。"
+    }
+  }
+}

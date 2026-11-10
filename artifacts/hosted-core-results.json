@@ -1,11 +1,11 @@
 {
-  "executedAt": "2026-11-10T02:20:18.158Z",
+  "executedAt": "2026-11-10T02:57:52.777Z",
   "target": "https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site",
-  "access": "existing owner-private service access; not anonymous browser access",
+  "access": "existing owner service access; not anonymous browser access",
   "scope": "Core product, historical evidence and manual revision; live upstream availability is separately recorded in ifind-hosted-probe.json",
   "results": [
     {
-      "name": "hosted UI responds behind existing private access boundary",
+      "name": "hosted UI responds through existing owner service access",
       "status": "pass"
     },
     {
@@ -37,12 +37,12 @@
       "status": "pass"
     },
     {
-      "name": "unconfigured hosted model remains explicit",
+      "name": "hosted model configuration is explicit without revealing credentials",
       "status": "pass"
     }
   ],
   "runIds": [
-    "run-b861b5ec-0e4d-4066-94a3-a5504f49ff91",
-    "run-0f343b11-d059-404e-97ec-ef3428989435"
+    "run-18c9936b-9a1d-46d5-8df9-069a814df2b2",
+    "run-d9812b89-854e-49ff-8bd5-acdc5e6973a0"
   ]
 }
