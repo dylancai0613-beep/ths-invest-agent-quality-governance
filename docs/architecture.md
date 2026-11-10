@@ -2,7 +2,7 @@
 
 ## 当前实现边界
 
-应用使用 Sites Vinext、React、TypeScript 和 Cloudflare Worker。D1 通过 Drizzle 保存 `quality_sessions` 中的会话 JSON 快照。仓库的本地 D1 建表 SQL 为 `drizzle/0000_mighty_sabretooth.sql`。先前本地 build 和迁移已由负责人确认成功；代码随后有更新，最终提交版本需重跑 build；尚未发布到 Sites。
+应用使用 Sites Vinext、React、TypeScript 和 Cloudflare Worker。D1 通过 Drizzle 保存 `quality_sessions` 中的会话 JSON 快照。仓库的本地 D1 建表 SQL 为 `drizzle/0000_mighty_sabretooth.sql`。Source helper 对 commit d715065cc4888500a03171de4946c74a2195e630 完成测试、typecheck、production build 和 secret scan；其后 judge/UI 又有补丁，v2 需重跑验证。D1 本地迁移已执行；v1 已部署，URL 为 `https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site`，版本 1 对应 commit `d715065cc4888500a03171de4946c74a2195e630`。站点 owner-only，浏览器要求 ChatGPT 登录，尚无用户登录后的评审访问证据。
 
 ## Skills 与执行状态
 
@@ -21,11 +21,16 @@ QualityCase 可携带最多 3 条 eventContext，记录发生时间、公开时�
 
 ## 请求与存储
 
-`POST /api/quality` 处理导入、规则评测、复核、反馈、反馈处理、回归案例登记和导出。会话状态由 D1 保存并通过 HttpOnly `quality_session` cookie 分隔。本地 API 冒烟 15/15 通过，覆盖反馈处理、确认后加入去重回归集及历史 evidence snapshot；`artifacts/screenshots/overview.jpg` 留存概览图，但完整 UI 逐步流程尚无截图证据。
+`POST /api/quality` 处理导入、规则评测、复核、反馈、反馈处理、回归案例登记和导出。会话状态由 D1 保存并通过 HttpOnly `quality_session` cookie 分隔。本地 API 冒烟 15/15 通过，覆盖反馈处理、确认后加入去重回归集及历史 evidence snapshot；`artifacts/screenshots/01-overview.jpg` 至 `10-mobile.jpg` 留存概览、评测、证据、人工复核、回归、版本比较、iFinD 核验、超时、事件时点和移动端操作过程。
 
 ## 发布待办
 
-Sites 尚未部署，因此没有公开评审 URL。部署后需验证 D1 binding/迁移、公开访问限制、iFinD 与模型是否配置、反馈/回归流程、新会话读取和交付材料。不要把本地 D1/外部账户权限推断为公网部署能力。
+v1 部署（`appgdep_6af20b1fed1c819197cb3a6fb487ded4`）已 succeeded，受限线上 smoke 7/8；UI、D1 案例加载、A/B 执行和持久化、review/regression、反馈处理通过。线上 iFinD 已配置 secret，但真实查询返回 502，原因排查中；模型未配置。owner-only 登录门后的实际评审访问尚待用户登录验证。不要把受限服务访问结果描述为匿名公开可访问。
+
+
+
+
+
 
 
 

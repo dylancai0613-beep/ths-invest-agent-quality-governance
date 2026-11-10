@@ -49,7 +49,7 @@ function redact(text: string) {
   return text.replace(/\b1[3-9]\d{9}\b/g, "[REDACTED_PHONE]").replace(/\b\d{17}[\dXx]\b/g, "[REDACTED_ID]");
 }
 const profileSchema = z.object({ profileId: z.string().max(100), experience: z.enum(["beginner", "experienced"]).nullable(), riskTolerance: z.enum(["low", "medium", "high"]).nullable(), horizonMonths: z.number().int().min(1).max(1200).nullable(), liquidityNeed: z.enum(["low", "medium", "high"]).nullable(), purpose: z.string().max(200).nullable() });
-const answerSchema = z.object({ text: z.string().max(8000), generatedAt: z.string().datetime({ offset: true }), provenance: z.enum(["preset", "generated"]) });
+const answerSchema = z.object({ text: z.string().max(8000), generatedAt: z.string().datetime({ offset: true }), provenance: z.enum(["preset", "generated", "manual"]) });
 const eventContextSchema = z.object({ id: z.string().min(1).max(100), title: z.string().min(1).max(200), occurredAt: z.string().datetime({ offset: true }), publishedAt: z.string().datetime({ offset: true }), source: z.string().min(1).max(200), summary: z.string().min(1).max(2000), synthetic: z.literal(true), referencePhrases: z.array(z.string().min(1).max(200)).max(20) });
 const importedCaseSchema = z.object({ caseId: z.string().min(1).max(100), question: z.string().min(1).max(2000), intent: z.enum(["fact_query", "knowledge", "market_event", "comparison", "suitability"]), askedAt: z.string().datetime({ offset: true }), kyc: profileSchema, synthetic: z.literal(true), expectedChecks: z.array(z.string().max(100)).max(30), evidence: z.array(z.object({ id: z.string().max(100), claim: z.string().max(500), value: z.number().finite(), unit: z.string().max(40), period: z.string().max(80), effectiveAt: z.string().datetime({ offset: true }), publishedAt: z.string().datetime({ offset: true }), source: z.string().max(200), synthetic: z.literal(true) })).max(20), eventContext: z.array(eventContextSchema).max(3).optional(), answers: z.record(z.string().max(100), answerSchema).refine((a) => Object.keys(a).length > 0) });
 const datasetSchema = z.object({ cases: z.array(importedCaseSchema).min(1).max(50) });
@@ -174,6 +174,21 @@ export async function POST(request: Request) {
       if (toolId === "timeout-probe") return fail(request, sessionId, "模拟超时：外部数据接口在时限内无响应，结果保留为待核验。", "SIMULATED_TIMEOUT", 504);
       if (toolId === "external-model") return state.tools.find((t) => t.id === toolId)?.status === "configured" ? withSession(request, sessionId, { ...responseState(state, sessionId), message: "模型适配器已由管理员配置；点击生成以执行一次实际调用。" }) : fail(request, sessionId, "模型适配器尚未配置。", "MODEL_NOT_CONFIGURED", 503);
       return fail(request, sessionId, "工具不存在。", "TOOL_NOT_FOUND", 404);
+    }
+    if (action === "revise") {
+      const parsed = z.object({ caseId: z.string().min(1).max(100), sourceVersionId: z.string().min(1).max(100), answerText: z.string().trim().min(1).max(8000), note: z.string().trim().min(1).max(1000) }).safeParse(body);
+      if (!parsed.success) return fail(request, sessionId, "请填写修订后的回答和修订说明，回答最多8000字。", "INVALID_REVISION", 400);
+      const input = parsed.data;
+      const item = state.cases.find(c => c.caseId === input.caseId);
+      const source = state.versions.find(v => v.id === input.sourceVersionId);
+      if (!item || !source || !item.answers[source.id]) return fail(request, sessionId, "源版本或案例不存在。", "REVISION_SOURCE_NOT_FOUND", 404);
+      if (state.versions.length >= 20) return fail(request, sessionId, "当前会话最多保存20个候选版本，请先导出再重置。", "VERSION_LIMIT", 429);
+      const revisionId = `manual-${id()}`;
+      const note = redact(input.note);
+      state.versions.push({ id: revisionId, name: `人工修订 · ${item.caseId}`, model: "人工修订（非模型生成）", promptVersion: "manual-revision-v1", dataSnapshot: source.dataSnapshot, description: `手工编辑：${note}`, sourceVersionId: source.id, changeNote: note });
+      item.answers[revisionId] = { text: redact(input.answerText), generatedAt: new Date().toISOString(), provenance: "manual" };
+      await save(sessionId, state);
+      return withSession(request, sessionId, { ...responseState(state, sessionId), message: "已创建独立的人工修订版本，源回答与历史评测未被修改。" });
     }
     if (action === "generate") {
       const versionId = body.versionId, caseId = body.caseId;

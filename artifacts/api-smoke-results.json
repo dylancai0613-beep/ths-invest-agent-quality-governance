@@ -1,5 +1,5 @@
 {
-  "executedAt": "2026-11-09T18:01:07.851Z",
+  "executedAt": "2026-11-10T02:15:22.546Z",
   "target": "http://127.0.0.1:5173",
   "results": [
     {
@@ -60,6 +60,14 @@
     },
     {
       "name": "run evidence is a stable historical snapshot",
+      "status": "pass"
+    },
+    {
+      "name": "an actual manual revision creates a new version and improves the selected answer without changing history",
+      "status": "pass"
+    },
+    {
+      "name": "historical iFinD evidence is explicitly selected and retains the original retrieval timestamp",
       "status": "pass"
     }
   ]

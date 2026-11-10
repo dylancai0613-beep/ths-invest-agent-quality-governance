@@ -25,6 +25,12 @@ test("semantic judge redacts personal fields before model transmission", async (
 test("invented evidence IDs are rejected", async () => {
   await assert.rejects(judgeAnswer(config, item, "candidate-a", respond({ ...valid, findings: [{ ...valid.findings[0], evidenceIds: ["nonexistent"] }] })), /不存在的证据/);
 });
+test("known event IDs can support retrospective timing review without being treated as contemporaneous knowledge", async () => {
+  const market = initialState().cases.find(c => c.eventContext?.length)!;
+  const eventId = market.eventContext![0].id;
+  const result = await judgeAnswer(config, market, "candidate-a", respond({ ...valid, findings: [{ ...valid.findings[0], dimension: "freshness", evidenceIds: [eventId] }] }));
+  assert.equal(result.status, "completed");
+});
 test("invented original-answer quotations are rejected", async () => {
   await assert.rejects(judgeAnswer(config, item, "candidate-a", respond({ ...valid, findings: [{ ...valid.findings[0], quote: "a fabricated quotation" }] })), /无法.*定位/);
 });

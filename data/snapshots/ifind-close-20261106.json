@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "symbol": "300033.SZ",
+  "date": "2026-11-06",
+  "field": "close",
+  "source": "iFinD MCP",
+  "query": "同花顺（300033.SZ）2026-11-06的不复权收盘价，单位人民币元，仅查询该交易日",
+  "retrievedAt": "2026-11-09T18:04:55.599Z",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"code\":1,\"msg\":\"success\",\"subCode\":null,\"subMsg\":null,\"data\":{\"answer\":\"|证券代码|证券简称|收盘价|\\n|---|---|---|\\n|300033.SZ|同花顺|202.7|\",\"indicators_params\":{\"收盘价\":{\"交易日期\":\"20261106\",\"复权方式\":\"不复权\"}}}}"
+    }
+  ],
+  "sourceEndpoint": "https://api-mcp.51ifind.com:8643/ds-mcp-servers/hexin-ifind-ds-stock-mcp",
+  "note": "Saved actual response; historical evidence, not a new online query."
+}

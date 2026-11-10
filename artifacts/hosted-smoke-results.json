@@ -1,0 +1,44 @@
+{
+  "executedAt": "2026-11-09T18:10:32.033Z",
+  "target": "https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site",
+  "access": "existing owner-private service access; not anonymous browser access",
+  "results": [
+    {
+      "name": "hosted UI responds behind existing private access boundary",
+      "status": "pass"
+    },
+    {
+      "name": "hosted D1 initialization and anonymous demo cases load",
+      "status": "pass"
+    },
+    {
+      "name": "hosted A/B evaluations execute and persist",
+      "status": "pass"
+    },
+    {
+      "name": "hosted review and regression snapshots are saved",
+      "status": "pass"
+    },
+    {
+      "name": "hosted feedback resolution is persisted",
+      "status": "pass"
+    },
+    {
+      "name": "hosted iFinD server secret is configured without exposing its value",
+      "status": "pass"
+    },
+    {
+      "name": "hosted iFinD performs a real dated query and explicit numeric verification",
+      "status": "fail",
+      "reason": "Expected values to be strictly equal:\n\n502 !== 200\n"
+    },
+    {
+      "name": "unconfigured hosted model remains explicit",
+      "status": "pass"
+    }
+  ],
+  "runIds": [
+    "run-cd49e974-5c8f-4621-bddd-5f3fad2d0e09",
+    "run-cf658017-d5ab-4603-a204-222a4f4a84bd"
+  ]
+}

@@ -1,23 +1,27 @@
 # 测试与验证记录
 
-更新日期：2026-11-10（Asia/Shanghai）。以下按仓库 artifacts 与负责人提供的执行记录整理；公开部署尚未完成。
+更新日期：2026-11-10（Asia/Shanghai）。本地功能已通过单元/协议测试、API smoke 和手工浏览器走查。v1 已部署，但站点为 owner-only 且浏览器要求登录；线上受限 smoke 为 7/8，iFinD 查询 502 正在排查。请注意下列通过结果所对应的代码版本。
 
 | 项目 | 实际结果 | 证据或边界 |
 |---|---|---|
-| 单元与协议测试 | 29/29 通过 | `artifacts/unit-test-results.json`；Node 24 执行 `node scripts/test.mjs`。包含五组画像不变性、数值/单位/期间核验、证据主体关联、多个期间、回答/事件公开时点、iFinD 日期依据、AI judge mock 协议、脱敏和证据引用验证。没有 live model 调用。 |
-| TypeScript 类型检查 | 通过 | 负责人报告执行 `npm run typecheck`；未保存独立控制台日志。 |
-| Sites/Vinext 构建 | 先前本地构建通过；最终代码构建 pending | 负责人报告先前 build 成功；后续代码继续更新，需最终 build 再确认，当前无独立日志文件。 |
-| D1 本地迁移 | 已成功执行 | 负责人确认将 `drizzle/0000_mighty_sabretooth.sql` 应用到本地 D1。完整服务重启后的持久性需以环境实际验证为准。 |
-| 本地 API 冒烟 | 15/15 通过 | `artifacts/api-smoke-results.json`；target `http://127.0.0.1:5173`；记录时间 2026-11-09T17:53:50.620Z（北京时间 2026-11-10 01:53:50）。覆盖反馈处理、确认后加入去重回归集、未确认拦截、历史证据快照等。 |
-| 事实核验指标单测 | 4/4 配置 evidence claims 覆盖，1/4 数值/单位/期间完全匹配 | `artifacts/unit-test-results.json` 的 quality 测试验证分子/分母。单位或期间明确错误算已核验不匹配；缺期间/证据歧义为 unverified。此分母仅是配置 evidence claims（及被识别的无证据行情主张），不代表自动抽取了答案中全部金融事实。 |
-| iFinD 查询 | 返回 300033.SZ 在 2026-11-06 的不复权收盘价 202.7 元 | `artifacts/ifind-local-result.json`；2026-11-09T12:22:14Z。历史数据。 |
-| iFinD 人工数值对照 | 输入 210 元 vs 返回 202.7 元：MISMATCH | `artifacts/ifind-verification-result.json`；2026-11-09T12:28:57Z。原始响应行包含日期 `20261106`，参数是“最新”；当前日期口径优先依据行日期。仅覆盖该单一证券、日期、不复权、人民币元收盘价。测试已覆盖日期行优先、显式日期冲突拒绝；无日期行且参数为“最新”不得核验。 |
-| 浏览器走查 | 本地初步主流程已走查 | `artifacts/screenshots/overview.jpg` 保存概览截图；没有覆盖全部交互步骤的逐屏证据。 |
-| 模型 live 调用 | 未执行 | 模型 API 未配置。mock 协议测试不证明真实模型评测或生成。 |
-| 部署与新会话评审访问 | pending | Sites 尚未部署，没有公开 URL；需发布访问权限及部署后验证。 |
-| 最终交付包大小 | pending | 需生成 ZIP 并确认 ≤30 MB。 |
+| 单元与协议测试 | 31/31 通过 | `artifacts/unit-test-results.json`；Node 24。覆盖 iFinD 日期来源、未来事件上下文、事实口径、画像不变、承诺表达、模型 judge mock 与脱敏等。无 live model 调用。 |
+| TypeScript 类型检查 | 通过 | 负责人确认 `npm run typecheck` 通过。 |
+| 生产构建与 secret scan | 已通过 | Source helper 对推送版本 `d715065cc4888500a03171de4946c74a2195e630` 完成 test → typecheck → production build → secret scan。之后又有 judge/UI 补丁，v2 仍需再次运行完整流程。 |
+| D1 本地迁移 | 已执行成功 | 使用 `drizzle/0000_mighty_sabretooth.sql`。受限线上 smoke 已验证案例加载和 A/B 评测保存；不等于用户登录后的独立验收。 |
+| API smoke | 15/15 通过 | `artifacts/api-smoke-results.json`；target `http://127.0.0.1:5173`；时间 2026-11-09T18:01:07.851Z（北京时间 2026-11-10 02:01:07）。含反馈处理、确认后去重加入回归集、未确认拦截和历史快照。 |
+| 浏览器操作走查 | 已完成并留图 | `artifacts/screenshots/01-overview.jpg` 至 `10-mobile.jpg`：概览、评测、回答证据、人工复核、确认后回归集、版本比较、iFinD 核验、超时、事件时点、移动端。 |
+| A/B 合成演示结果 | 同一 20 条案例中 A 有 13 条规则失败，B 有 0 条 | 见 `06-comparison.jpg`。这些是预置合成候选答案与确定性规则的结果，不是模型性能提升，也不是现场 AI 评测。 |
+| 事实核验指标单测 | 配置 claim 4/4 核验，1/4 匹配 | 明确的单位/期间/数值错误记为核验后不匹配；缺失/歧义保持 unverified。分母只包括配置 evidence claims 与被规则识别的无证据行情主张，不代表通用事实抽取。 |
+| iFinD 查询与数值对照 | 300033.SZ，2026-11-06，不复权收盘价 202.7 元；210 元输入得到 MISMATCH | `artifacts/ifind-local-result.json`、`artifacts/ifind-verification-result.json`。仅覆盖该证券、日期、字段、复权方式及人民币元单位，不等于全部回答事实已核验。 |
+| 模型 live 调用 | 未执行 | 管理员模型配置未提供。模型协议/语义评测测试均使用 mock。 |
+| v1 部署与受限线上 smoke | 部署 succeeded；7/8 通过 | `https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site`；deployment `appgdep_6af20b1fed1c819197cb3a6fb487ded4`，commit `d715065cc4888500a03171de4946c74a2195e630`，env revision 1。见 `artifacts/hosted-smoke-results.json`。站点 owner-only，浏览器有 ChatGPT 登录门；未验证用户登录后的评审访问。iFinD 实际查询 502，排查中。 |
+| 演示视频 | 已生成，待解码验证 | `D:\Codex\outputs\同花顺笔试_第二题\02_产品操作截图演示.mp4`，99 秒；由真实操作截图整理，非连续录屏。ffmpeg 解码检查待完成。 |
+| 最终交付包 | pending | 生成 ZIP 后确认不超过 30 MB。 |
 | lint | 未运行 | 不声称 lint 通过。 |
 
-本地启动、迁移和命令见 README。未获得的公网、live model 和最终打包证据保持 pending，等待负责人提供部署结果后再更新。
+需补证：judge/UI 补丁后的 v2 完整验证链；用户登录后的评审访问；线上 iFinD 502 的原因与修复验证。模型配置与最终 ZIP 仍待提供/完成。
+
+
+
 
 

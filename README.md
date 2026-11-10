@@ -4,12 +4,14 @@
 
 ## 当前状态（2026-11-10）
 
-- Sites Vinext + React/TypeScript、Cloudflare Worker + D1 架构已完成本地构建并由负责人确认；D1 本地迁移已执行。之后代码仍有更新，最终提交版本需再做一次 build 并留证。
-- `npm test`：Node 24 环境下 29 条测试通过；`npm run typecheck` 通过。`npm run test:api` 的本地 API 冒烟记录见 `artifacts/api-smoke-results.json`，15/15 通过，目标为 `http://127.0.0.1:5173`。
-- 本地初步浏览器主流程已走过；`artifacts/screenshots/overview.jpg` 留存概览截图，但尚无每个交互步骤的逐屏证据。
+- Sites Vinext + React/TypeScript、Cloudflare Worker + D1 架构已实现。本地迁移已执行。生产构建和 secret scan 已在已推送版本 `d715065cc4888500a03171de4946c74a2195e630` 通过；之后有 judge/UI 更新，v2 仍需再次验证。
+- `npm test`：Node 24 环境下 31 条测试通过；`npm run typecheck` 通过。`npm run test:api` 的本地 API 冒烟记录见 `artifacts/api-smoke-results.json`，15/15 通过，目标为 `http://127.0.0.1:5173`。
+- 已操作并留存 10 张截图：`artifacts/screenshots/01-overview.jpg` 至 `artifacts/screenshots/10-mobile.jpg`，覆盖概览、评测、回答证据、人工复核、回归、版本比较、iFinD 核验、超时、事件时点和移动端页面。
 - iFinD MCP 有真实查询记录，限于允许列表证券、指定交易日、不复权收盘价、人民币元。`artifacts/ifind-local-result.json` 记录 300033.SZ 在 2026-11-06 的 202.7 元；`artifacts/ifind-verification-result.json` 将用户提供的 210 元与 202.7 元比较，给出 MISMATCH。该结果仅证明这一条限定数值主张，不代表实时推送或普遍事实核验能力。该查询的验证口径以返回行内明确日期为优先；若行内日期与显式参数冲突则待核验。无行日期时参数必须明确匹配目标日，“最新”或缺失时待核验。
 - 模型服务尚未配置。仅有 mock 协议、脱敏和证据拒绝相关测试；没有 live model 调用，不能称已完成实际模型评测或生成。
-- 网站尚未部署，没有可提供的公开评审 URL。反馈处理、确认后加入回归集（含重复登记拦截）和历史运行快照已有 API smoke 验收；完整 UI 操作仍需保存逐步截图。
+- v1 已部署：[投资 Agent 回答质量与个性化治理平台](https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site)，版本 1 对应 commit `d715065cc4888500a03171de4946c74a2195e630`，deployment `appgdep_6af20b1fed1c819197cb3a6fb487ded4` 状态 succeeded。站点为 owner-only；浏览器会显示 ChatGPT 登录门，尚未验证用户登录后的评审访问，不能称匿名可访问。已有受限线上 smoke 为 7/8：页面、D1 案例加载、A/B 执行和保存、复核/回归快照、反馈处理、模型未配置状态均通过；线上 iFinD 查询 502，排查中，见 `artifacts/hosted-smoke-results.json`。
+
+A/B 对照截图显示同一组 20 条预置合成案例中，候选 A 有 13 条规则失败、候选 B 有 0 条规则失败。这是预置回答与确定性规则的结果，不是模型变好或现场 AI 评测。
 
 事实准确率只对已明确核验的配置 evidence claim 计算：单位/期间明确不匹配属于已核验但不匹配；缺少期间或证据歧义属于未核验。核验覆盖率以配置的 evidence claim 数为分母，并不表示系统已覆盖所有回答事实或完成通用主张抽取。详细记录见 `docs/test-results.md` 和 `docs/known-limitations.md`。
 
@@ -53,6 +55,21 @@ node scripts/configure-ifind-local.cjs <mcp_config.json的绝对路径>
 
 脚本只把凭证写入 git 忽略的 `.dev.vars`，不会打印凭证。不要把 `.dev.vars`、模型密钥或真实用户数据提交到仓库。此脚本不等于部署端已配置 iFinD。
 
+## 源码目录
+
+```text
+app/          页面和 API 路由（quality、ifind、judge）
+components/   工作台页面组件与 UI 基础组件
+lib/          评测规则、iFinD 和模型辅助复核逻辑
+db/           D1 数据访问和 Drizzle 表结构
+worker/       Cloudflare Worker 入口
+scripts/      Sites 开发、安装、测试及本地凭证配置脚本
+skills/       版本化规则 rubric 与规范文档
+data/         导入模板和合成演示材料
+tests/        Node 24 单元、协议和评测测试
+docs/         产品方案、架构、验收和边界说明
+artifacts/    测试结果、行情证据及脱敏操作截图
+```
 ## 文档与交付
 
 - 方案和实际状态：`docs/product-plan.md`
@@ -62,7 +79,15 @@ node scripts/configure-ifind-local.cjs <mcp_config.json的绝对路径>
 - Skill 规范：`skills/`
 - 可直接提交的导入请求样例：`data/demo/import-template/cases.json`
 
-单次同步评测最多 20 条、导入最多 50 条、单会话运行历史最多 20 条；会话数据大小上限为 1.5 MB。最终提交 ZIP 需不超过 30 MB。交付文件优先放在 `D:\Codex\outputs`，临时文件放在 `D:\Codex\work`。部署和评审仍需用户提供或授予 Sites 发布/访问权限；如要启用模型语义辅助复核，需由有权管理员配置模型服务地址、密钥和模型名。不要在聊天中发送密钥。
+单次同步评测最多 20 条、导入最多 50 条、单会话运行历史最多 20 条；会话数据大小上限为 1.5 MB。最终提交 ZIP 需不超过 30 MB。交付文件优先放在 `D:\Codex\outputs`，临时文件放在 `D:\Codex\work`。v1 已部署但评审需在 ChatGPT 登录后访问；如要启用模型语义辅助复核，需由有权管理员配置模型服务地址、密钥和模型名。不要在聊天中发送密钥。
+
+
+
+
+
+
+
+
 
 
 

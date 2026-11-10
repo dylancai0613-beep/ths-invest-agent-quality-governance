@@ -1,0 +1,6 @@
+{
+  "httpStatus": 502,
+  "status": "error",
+  "source": "iFinD MCP",
+  "notice": "iFinD 数据服务异常（HTTP 522）"
+}

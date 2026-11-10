@@ -80,6 +80,20 @@ await check('run evidence is a stable historical snapshot', async () => {
   assert.ok(persisted.caseSnapshots?.length); assert.deepEqual(persisted.caseSnapshots[0].evidence, state.cases[0].evidence);
   assert.equal(persisted.items[0].answerText, state.cases[0].answers['candidate-a'].text);
 });
+await check('an actual manual revision creates a new version and improves the selected answer without changing history', async () => {
+  const fixed = '合成证据快照显示虚构基金甲在2026年10月收益率为2.4%。该数据仅用于演示。';
+  const revision = await request({ action: 'revise', caseId: state.cases[0].caseId, sourceVersionId: 'candidate-a', answerText: fixed, note: '依据ev-case-fact-1更正错误数字，未使用外部模型。' });
+  assert.equal(revision.response.status, 200);
+  const version = revision.data.versions.find(v => v.sourceVersionId === 'candidate-a' && v.model.includes('人工修订')); assert.ok(version);
+  const evaluated = await request({ action: 'evaluate', versionId: version.id, caseIds: [state.cases[0].caseId] });
+  assert.equal(evaluated.response.status, 200); assert.equal(evaluated.data.runs[0].items[0].answerProvenance, 'manual'); assert.equal(evaluated.data.runs[0].items[0].overallStatus, 'pass');
+  assert.equal(evaluated.data.runs.find(r => r.id === runA.id).items[0].answerText, runA.items[0].answerText);
+});
+await check('historical iFinD evidence is explicitly selected and retains the original retrieval timestamp', async () => {
+  const response = await fetch(`${base}/api/tools/ifind`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'historical_snapshot', symbol: '300033.SZ', date: '2026-11-06', field: 'close', claimValue: 210, claimUnit: '元' }) });
+  const data = await response.json(); assert.equal(response.status, 200); assert.equal(data.provenance, 'historical_snapshot'); assert.equal(data.status, 'historical_snapshot');
+  assert.equal(data.verification.status, 'MISMATCH'); assert.equal(data.verification.referenceValue, 202.7); assert.notEqual(data.retrievedAt, data.servedAt);
+});
 mkdirSync('artifacts', { recursive: true });
 writeFileSync('artifacts/api-smoke-results.json', JSON.stringify({ executedAt: new Date().toISOString(), target: base, results }, null, 2));
 console.log(`${results.filter(r => r.status === 'pass').length}/${results.length} checks passed.`);

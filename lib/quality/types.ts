@@ -19,16 +19,16 @@ export interface EventContext {
 export interface QualityCase {
   caseId: string; question: string; intent: Intent; askedAt: string; kyc: KycProfile;
   synthetic: true; expectedChecks: string[]; evidence: EvidenceSnapshot[]; eventContext?: EventContext[];
-  answers: Record<string, { text: string; generatedAt: string; provenance: "preset" | "generated" }>;
+  answers: Record<string, { text: string; generatedAt: string; provenance: "preset" | "generated" | "manual" }>;
 }
-export interface CandidateVersion { id: string; name: string; model: string; promptVersion: string; dataSnapshot: string; description: string; }
+export interface CandidateVersion { id: string; name: string; model: string; promptVersion: string; dataSnapshot: string; description: string; sourceVersionId?: string; changeNote?: string; }
 export interface EvalVersion { id: string; name: string; skillVersion: string; rules: string[]; }
 export interface Finding {
   id: string; ruleId: string; dimension: string; severity: "critical" | "high" | "medium" | "low";
   status: FindingStatus; quote: string; reason: string; evidenceIds: string[]; reviewRequired: boolean;
 }
 export interface RunItem {
-  caseId: string; answerText: string; answerProvenance: "preset" | "generated";
+  caseId: string; answerText: string; answerProvenance: "preset" | "generated" | "manual";
   overallStatus: OverallStatus; findings: Finding[]; reviewStatus: "pending" | ReviewDecision;
   factNumerator: number; factDenominator: number; verifiedNumerator: number; verifiedDenominator: number;
 }

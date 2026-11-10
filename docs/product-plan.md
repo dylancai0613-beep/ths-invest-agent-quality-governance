@@ -397,7 +397,7 @@ verify(claim, asOf, dataSnapshotId)
 
 ### 10.1 建议技术实现
 
-实际架构采用 Sites 提供的 Vinext（React + TypeScript）应用，经 Cloudflare Worker 提供服务端执行能力，D1 持久化状态。本地 build 与 D1 建表迁移已由负责人确认通过；公网尚未部署。评测规则由 Worker 中的 TypeScript 代码执行；skills/** 中的 rubric.json 由 TypeScript 静态导入并随 Worker bundle 发布；SKILL.md/examples.json 是可审阅的规范与示例，不作为运行时脚本。外部模型仅在管理员环境配置后经服务端 OpenAI 兼容接口调用；未配置时不得宣称已做实际 AI 评测。
+实际架构采用 Sites 提供的 Vinext（React + TypeScript）应用，经 Cloudflare Worker 提供服务端执行能力，D1 持久化状态。本地 build 与 D1 建表迁移已由负责人确认通过；v1 已部署（`appgdep_6af20b1fed1c819197cb3a6fb487ded4`）；owner-only 登录门后的评审访问仍待用户登录验证，线上 smoke 7/8，iFinD 查询 502 排查中。评测规则由 Worker 中的 TypeScript 代码执行；skills/** 中的 rubric.json 由 TypeScript 静态导入并随 Worker bundle 发布；SKILL.md/examples.json 是可审阅的规范与示例，不作为运行时脚本。外部模型仅在管理员环境配置后经服务端 OpenAI 兼容接口调用；未配置时不得宣称已做实际 AI 评测。
 
 实际存储选择 Cloudflare D1；本地开发使用 Wrangler/Miniflare 的本地 D1 状态。
 
@@ -661,7 +661,7 @@ investment-agent-quality/
 
 
 
-> 实施状态说明：本文保留了最初总时限 24 小时、当时估算剩余约 20 小时的计划背景；这不是当前倒计时。当前记录更新至 2026-11-10。Sites Vinext + React/TypeScript、Cloudflare Worker + D1 已确立；先前本地 build 与 D1 migration 已由负责人确认；29 条测试、类型检查及 15/15 API 冒烟已由负责人报告通过。最新代码最终 build 仍待确认。iFinD 有一条受限历史行情核验记录。模型尚未配置，未完成 live 调用；Sites 尚未部署。详见 docs/test-results.md。最终交付 ZIP 需不超过 30 MB。
+> 实施状态说明：本文保留了最初总时限 24 小时、当时估算剩余约 20 小时的计划背景；这不是当前倒计时。当前记录更新至 2026-11-10。Sites Vinext + React/TypeScript、Cloudflare Worker + D1 已确立；source helper 已对推送 commit `d715065cc4888500a03171de4946c74a2195e630` 完成 test、typecheck、production build 与 secret scan；此后 judge/UI 补丁后的 v2 仍需重跑完整验证。D1 本地迁移已执行；31 条测试及 15/15 API 冒烟已通过，并有 10 张本地浏览器操作截图。v1 已部署，deployment `appgdep_6af20b1fed1c819197cb3a6fb487ded4` succeeded，URL `https://invest-agent-quality-lab.opalescentdisco1.chatgpt.site`；站点 owner-only，浏览器要求登录，用户登录后的评审访问仍待验证。受限线上 smoke 7/8，iFinD 查询 502 排查中。iFinD 有一条受限历史行情核验记录。模型尚未配置，未完成 live 调用。详见 docs/test-results.md。最终交付 ZIP 需不超过 30 MB。
 
 
 
@@ -674,17 +674,26 @@ investment-agent-quality/
 
 | 项目 | 当前事实 | 状态与边界 |
 |---|---|---|
-| 本地技术架构 | Sites Vinext + React/TypeScript、Cloudflare Worker + D1 | 先前本地 build 与 D1 migration 已确认；最终代码 build 待复核，不等于公网已部署 |
-| 自动检查 | Node 24 下 29 条测试、`npm run typecheck` | 负责人报告通过；详见 docs/test-results.md |
+| 本地技术架构 | Sites Vinext + React/TypeScript、Cloudflare Worker + D1 | D1 本地迁移已执行；commit d715065 的构建链已通过，此后 judge/UI 补丁的 v2 验证仍待完成，不等于公网已部署 |
+| 自动检查 | Node 24 下 31 条测试、`npm run typecheck` | 负责人报告通过；详见 docs/test-results.md |
 | API 流程 | API smoke 15/15 | 证据为本地 `artifacts/api-smoke-results.json`，目标 127.0.0.1:5173 |
 | iFinD | 300033.SZ、2026-11-06、不复权收盘价、人民币元 202.7；和输入 210 元比较为 MISMATCH | 仅此限定价格 claim；不是实时推送或通用事实核验 |
 | Skill 执行 | 五个 Skill 对应的确定性规则执行 | 意图用输入中的预设字段；case-diagnosis 为 spec_only |
 | AI 语义复核/生成 | 服务端模型配置尚未提供 | 只有 mock 测试；无 live model 调用 |
-| 反馈、回归和任务历史 | API smoke 已覆盖反馈处理、确认入回归与去重，历史快照可查 | 有 API 证据；完整 UI 逐步截图仍需补 |
-| 网站评审 | 尚未发布 | 无公开网址；需发布权限和新会话验证 |
+| 反馈、回归和任务历史 | API smoke 已覆盖反馈处理、确认入回归与去重，历史快照可查 | API 证据与 10 张本地操作截图已留存；v1 已部署，登录后的评审访问仍待验收 |
+| 网站评审 | v1 已部署 | owner-only 且需登录；用户登录后的评审访问待验证，线上 smoke 7/8，iFinD 502 排查中 |
 | 提交包 | 尚未最终打包 | 需核实不超过 30 MB |
 
 需用户/管理员后续提供：若希望启用真实模型，授权的 OpenAI 兼容地址、模型名及安全注入的 API 密钥；若要评审公网版本，Sites 发布权限与评审访问方式。不要将任何密钥放入仓库或聊天。
+
+
+
+
+
+
+
+
+
 
 
 
