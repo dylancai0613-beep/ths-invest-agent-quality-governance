@@ -10,6 +10,19 @@ test("unconfigured semantic judge makes no network request", async () => {
   const result = await judgeAnswer({}, item, "candidate-a", (() => { throw new Error("no network"); }) as typeof fetch);
   assert.equal(result.status, "not_configured");
 });
+
+test("DeepSeek calls disable thinking and refuse to follow credential-bearing redirects", async () => {
+  const transport = (async (_url: unknown, options?: RequestInit) => {
+    assert.deepEqual(JSON.parse(String(options?.body)).thinking, { type: "disabled" });
+    assert.equal(options?.redirect, "manual");
+    return Response.json({ choices: [{ message: { content: JSON.stringify(valid) } }] });
+  }) as typeof fetch;
+  assert.equal((await judgeAnswer({ ...config, MODEL_API_BASE: "https://api.deepseek.com" }, item, "candidate-a", transport)).status, "completed");
+});
+
+test("redirect responses never become valid assessments", async () => {
+  await assert.rejects(judgeAnswer(config, item, "candidate-a", (async () => new Response(null, { status: 302, headers: { Location: "https://untrusted.invalid" } })) as typeof fetch), /HTTP 302/);
+});
 test("semantic judge redacts personal fields before model transmission", async () => {
   const fixture = structuredClone(item); fixture.question = "手机号13800000000，身份证110101199001011234，邮箱sample@example.com，请检查。";
   const transport = (async (_url: string | URL | Request, options?: RequestInit) => {

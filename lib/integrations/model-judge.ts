@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { modelWireOptions } from "./model-options";
 import { rubrics } from "../quality/rubrics";
 import type { QualityCase } from "../quality/types";
 
@@ -39,11 +40,12 @@ export async function judgeAnswer(config: ModelConfig, item: QualityCase, versio
 你是事后审核员，可以看到事件上下文；判定回答当时是否可知时，必须比较 publishedAt 和 answeredAt。晚于回答的事件只能作为识别未来信息误用的审计材料，不能被当作回答生成时已知的事实。
 不要因为出现“保证”二字就忽略否定语境。必要信息不足时需复核或待核验。
 只输出 JSON：{"overallStatus":"pass|fail|needs_review|pending_verification","summary":"简短可核查的结论依据","findings":[{"dimension":"relevance|factuality|freshness|personalization|compliance|privacy","severity":"critical|high|medium|low","quote":"回答原文中的连续片段或空串","reason":"简明理由与限制","evidenceIds":["仅可引用输入中的证据ID"]}]}。
+findings只列出实际存在的缺陷或需要复核的不确定问题，禁止把正确行为、通过项、赞许或无问题检查写入findings。overallStatus为pass时findings必须是空数组[]，通过的理由只写在summary中。
 不输出内部思维链，不生成收益承诺，不改写客观事实。你的结论始终是待人工确认的建议。`;
   const response = await transport(`${config.MODEL_API_BASE!.replace(/\/$/, "")}/chat/completions`, {
     method: "POST", headers: { Authorization: `Bearer ${config.MODEL_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: config.MODEL_NAME, temperature: 0, max_tokens: 2500, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify(safeInput) }] }),
-    signal: AbortSignal.timeout(35000), redirect: "error",
+    body: JSON.stringify({ model: config.MODEL_NAME, ...modelWireOptions(config.MODEL_API_BASE!), temperature: 0, max_tokens: 2500, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify(safeInput) }] }),
+    signal: AbortSignal.timeout(35000), redirect: "manual",
   });
   if (!response.ok) throw new Error(`模型服务请求失败（HTTP ${response.status}）`);
   const data = await response.json() as { choices?: { message?: { content?: string } }[] };
